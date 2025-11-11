@@ -1,3 +1,5 @@
+using Eventhub.Application.Interfaces;
+using Eventhub.Application.Services;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
@@ -27,6 +29,14 @@ public static class DependencyInjection
         services.AddScoped<IProgramacaoEventoRepository, ProgramacaoEventoRepository>();
         services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
         services.AddScoped<IGaleriaRepository, GaleriaRepository>();
+
+        // Services
+        services.AddScoped<IEventoService, EventoService>();
+        services.AddScoped<IUsuarioService, UsuarioService>();
+        services.AddScoped<IConvidadosService, ConvidadosService>();
+        services.AddScoped<IProgramacaoEventoService, ProgramacaoEventoService>();
+        services.AddScoped<INotificacaoService, NotificacaoService>();
+        services.AddScoped<IGaleriaService, GaleriaService>();
 
         return services;
     }
