@@ -55,5 +55,10 @@ public class ProgramacaoEventoMapping : IEntityTypeConfiguration<ProgramacaoEven
             .WithOne(r => r.Programacao)
             .HasForeignKey(r => r.IdProgramacao)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.Status)
+            .WithMany(s => s.Programacoes)
+            .HasForeignKey(p => p.IdStatus)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -36,7 +36,7 @@ public class UsuarioMapping : IEntityTypeConfiguration<Usuario>
         // Relacionamentos
         builder.HasMany(u => u.Eventos)
             .WithOne(e => e.UsuarioCriador)
-            .HasForeignKey(e => e.CpfInclusao)
+            .HasForeignKey(e => e.IdUsuarioCriador)
             .HasPrincipalKey(u => u.Id)
             .OnDelete(DeleteBehavior.Restrict);
 

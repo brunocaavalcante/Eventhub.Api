@@ -17,5 +17,6 @@ public class ProgramacaoEvento
     public Evento Evento { get; set; } = null!;
     public Fotos Foto { get; set; } = null!;
     public ICollection<ResponsavelProgramacao> Responsaveis { get; set; } = new List<ResponsavelProgramacao>();
-    public ICollection<StatusProgramacao> StatusProgramacoes { get; set; } = new List<StatusProgramacao>();
+    public int IdStatus { get; set; }
+    public StatusProgramacao Status { get; set; } = null!;
 }

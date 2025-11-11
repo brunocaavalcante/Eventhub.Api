@@ -21,7 +21,7 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
         builder.Property(e => e.IdEndereco)
             .IsRequired();
 
-        builder.Property(e => e.CpfInclusao)
+        builder.Property(e => e.IdUsuarioCriador)
             .IsRequired()
             .HasMaxLength(20);
 
@@ -59,7 +59,7 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
 
         builder.HasOne(e => e.UsuarioCriador)
             .WithMany(u => u.Eventos)
-            .HasForeignKey(e => e.CpfInclusao)
+            .HasForeignKey(e => e.IdUsuarioCriador)
             .HasPrincipalKey(u => u.Id)
             .OnDelete(DeleteBehavior.Restrict);
 

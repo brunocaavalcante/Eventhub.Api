@@ -15,11 +15,5 @@ public class StatusEventoMapping : IEntityTypeConfiguration<StatusEvento>
         builder.Property(s => s.Descricao)
             .IsRequired()
             .HasMaxLength(100);
-
-        // Relacionamentos
-        builder.HasMany(s => s.Eventos)
-            .WithOne(e => e.Status)
-            .HasForeignKey(e => e.IdStatus)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

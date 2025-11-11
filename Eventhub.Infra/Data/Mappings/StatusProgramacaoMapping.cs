@@ -15,10 +15,5 @@ public class StatusProgramacaoMapping : IEntityTypeConfiguration<StatusProgramac
         builder.Property(s => s.Descricao)
             .IsRequired()
             .HasMaxLength(100);
-
-        // Relacionamentos
-        builder.HasMany(s => s.Programacoes)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

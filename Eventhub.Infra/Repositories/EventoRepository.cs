@@ -14,7 +14,7 @@ public class EventoRepository : Repository<Evento>, IEventoRepository
     public async Task<IEnumerable<Evento>> GetByUsuarioAsync(int idUsuario)
     {
         return await _dbSet
-            .Where(e => e.CpfInclusao == idUsuario.ToString())
+            .Where(e => e.IdUsuarioCriador == idUsuario)
             .Include(e => e.TipoEvento)
             .Include(e => e.Status)
             .Include(e => e.Endereco)
@@ -42,7 +42,7 @@ public class EventoRepository : Repository<Evento>, IEventoRepository
     public async Task<IEnumerable<Evento>> GetEventosAtivosByUsuarioAsync(int idUsuario)
     {
         return await _dbSet
-            .Where(e => e.CpfInclusao == idUsuario.ToString() && e.DataFim >= DateTime.Now)
+            .Where(e => e.IdUsuarioCriador == idUsuario && e.DataFim >= DateTime.Now)
             .Include(e => e.TipoEvento)
             .Include(e => e.Status)
             .Include(e => e.Endereco)
