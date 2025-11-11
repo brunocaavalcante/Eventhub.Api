@@ -14,4 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Eventhub.IoC\Eventhub.IoC.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configuracao\" />
+  </ItemGroup>
 </Project>
