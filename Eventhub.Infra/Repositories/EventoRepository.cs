@@ -1,0 +1,52 @@
+using Eventhub.Domain.Entities;
+using Eventhub.Domain.Interfaces;
+using Eventhub.Infra.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Eventhub.Infra.Repositories;
+
+public class EventoRepository : Repository<Evento>, IEventoRepository
+{
+    public EventoRepository(EventhubDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IEnumerable<Evento>> GetByUsuarioAsync(int idUsuario)
+    {
+        return await _dbSet
+            .Where(e => e.CpfInclusao == idUsuario.ToString())
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Status)
+            .Include(e => e.Endereco)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Evento>> GetByStatusAsync(int idStatus)
+    {
+        return await _dbSet
+            .Where(e => e.IdStatus == idStatus)
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Status)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Evento>> GetByTipoAsync(int idTipo)
+    {
+        return await _dbSet
+            .Where(e => e.IdTipoEvento == idTipo)
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Status)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Evento>> GetEventosAtivosByUsuarioAsync(int idUsuario)
+    {
+        return await _dbSet
+            .Where(e => e.CpfInclusao == idUsuario.ToString() && e.DataFim >= DateTime.Now)
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Status)
+            .Include(e => e.Endereco)
+            .OrderBy(e => e.DataInicio)
+            .ToListAsync();
+    }
+}
