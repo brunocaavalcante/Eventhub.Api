@@ -1,0 +1,10 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+services:
+  eventhubapi:
+    image: eventhubapi
+    build:
+      context: .
+      dockerfile: Eventhub.Api/Dockerfile
+    ports:
+      - 5189:5189

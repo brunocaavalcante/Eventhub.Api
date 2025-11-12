@@ -1,0 +1,44 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+services:
+  eventhubapi:
+    image: eventhubapi
+    build:
+      context: .
+      dockerfile: Eventhub.Api/Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5189:5189
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    depends_on:
+      - db
+    networks:
+      - eventhub_network
+
+  db:
+    image: mysql:8.0
+    container_name: eventhub_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123@Mudar
+      MYSQL_DATABASE: eventhub_db
+      MYSQL_USER: eventhub_user
+      MYSQL_PASSWORD: 123@Mudar
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - eventhub_network
+
+volumes:
+  mysql_data:
+
+networks:
+  eventhub_network:
+    driver: bridge
+
