@@ -1,3 +1,4 @@
+using Eventhub.Application.Interfaces;
 using Eventhub.Application.Services;
 using Eventhub.Domain.Entities;
 using Eventhub.Domain.Exceptions;
@@ -11,13 +12,18 @@ public class UsuarioServiceTests
 {
     private readonly Mock<IUsuarioRepository> _usuarioRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IKeycloakService> _keycloakServiceMock;
     private readonly UsuarioService _usuarioService;
 
     public UsuarioServiceTests()
     {
         _usuarioRepositoryMock = new Mock<IUsuarioRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _usuarioService = new UsuarioService(_usuarioRepositoryMock.Object, _unitOfWorkMock.Object);
+        _keycloakServiceMock = new Mock<IKeycloakService>();
+        _usuarioService = new UsuarioService(
+            _usuarioRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _keycloakServiceMock.Object);
     }
 
     [Fact]

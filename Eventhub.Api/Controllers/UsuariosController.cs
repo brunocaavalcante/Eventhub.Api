@@ -1,4 +1,5 @@
 using Eventhub.Api.Models;
+using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
 using Eventhub.Domain.Interfaces;
@@ -19,9 +20,6 @@ public class UsuariosController : BaseController
         _usuarioRepository = usuarioRepository;
     }
 
-    /// <summary>
-    /// Obtém todos os usuários
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(CustomResponse<IEnumerable<Usuario>>), 200)]
     public async Task<IActionResult> ObterTodos()
@@ -37,9 +35,6 @@ public class UsuariosController : BaseController
         }
     }
 
-    /// <summary>
-    /// Obtém um usuário por ID
-    /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(CustomResponse<Usuario>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
@@ -59,9 +54,6 @@ public class UsuariosController : BaseController
         }
     }
 
-    /// <summary>
-    /// Obtém um usuário por e-mail
-    /// </summary>
     [HttpGet("email/{email}")]
     [ProducesResponseType(typeof(CustomResponse<Usuario>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
@@ -81,13 +73,10 @@ public class UsuariosController : BaseController
         }
     }
 
-    /// <summary>
-    /// Cria um novo usuário
-    /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(CustomResponse<Usuario>), 201)]
+    [ProducesResponseType(typeof(CustomResponse<CreateUsuarioDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
-    public async Task<IActionResult> Criar([FromBody] Usuario usuario)
+    public async Task<IActionResult> Criar([FromBody] CreateUsuarioDto usuario)
     {
         try
         {
@@ -100,9 +89,6 @@ public class UsuariosController : BaseController
         }
     }
 
-    /// <summary>
-    /// Atualiza um usuário existente
-    /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(CustomResponse<Usuario>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
