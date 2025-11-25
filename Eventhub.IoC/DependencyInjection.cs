@@ -37,6 +37,11 @@ public static class DependencyInjection
         services.AddScoped<IProgramacaoEventoService, ProgramacaoEventoService>();
         services.AddScoped<INotificacaoService, NotificacaoService>();
         services.AddScoped<IGaleriaService, GaleriaService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IKeycloakService, KeycloakService>();
+
+        // HttpClient
+        services.AddHttpClient();
 
         return services;
     }
