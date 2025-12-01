@@ -1,3 +1,4 @@
+using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Services;
 using Eventhub.Domain.Entities;
@@ -30,14 +31,12 @@ public class UsuarioServiceTests
     public async Task AdicionarAsync_DeveAdicionarUsuario_QuandoDadosValidos()
     {
         // Arrange
-        var usuario = new Usuario
+        var usuario = new CreateUsuarioDto
         {
-            Id = 1,
             Nome = "João Silva",
             Email = "joao@teste.com",
-            Telefone = "11999999999",
-            Status = "Ativo",
-            DataCadastro = DateTime.Now
+            Password = "SenhaForte123!",
+            Telefone = "11999999999"
         };
 
         _usuarioRepositoryMock.Setup(x => x.EmailExistsAsync(usuario.Email))
@@ -63,11 +62,12 @@ public class UsuarioServiceTests
     public async Task AdicionarAsync_DeveLancarExcecao_QuandoEmailJaExiste()
     {
         // Arrange
-        var usuario = new Usuario
+        var usuario = new CreateUsuarioDto
         {
             Nome = "João Silva",
             Email = "joao@teste.com",
-            Status = "Ativo"
+            Password = "SenhaForte123!",
+            Telefone = "11999999999"
         };
 
         _usuarioRepositoryMock.Setup(x => x.EmailExistsAsync(usuario.Email))
@@ -85,11 +85,12 @@ public class UsuarioServiceTests
     public async Task AdicionarAsync_DeveLancarExcecao_QuandoNomeVazio()
     {
         // Arrange
-        var usuario = new Usuario
+        var usuario = new CreateUsuarioDto
         {
             Nome = "",
             Email = "joao@teste.com",
-            Status = "Ativo"
+            Password = "SenhaForte123!",
+            Telefone = "11999999999"
         };
 
         // Act
@@ -104,11 +105,12 @@ public class UsuarioServiceTests
     public async Task AdicionarAsync_DeveLancarExcecao_QuandoEmailInvalido()
     {
         // Arrange
-        var usuario = new Usuario
+        var usuario = new CreateUsuarioDto
         {
             Nome = "João Silva",
             Email = "emailinvalido",
-            Status = "Ativo"
+            Password = "SenhaForte123!",
+            Telefone = "11999999999"
         };
 
         // Act
