@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Eventhub.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/tipo-eventos")]
 public class TipoEventoController : BaseController
 {
     private readonly ITipoEventoService _tipoEventoService;
