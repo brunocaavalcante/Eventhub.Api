@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Eventhub.Api\Eventhub.Api.csproj" />
     <ProjectReference Include="..\Eventhub.Application\Eventhub.Application.csproj" />
     <ProjectReference Include="..\Eventhub.Domain\Eventhub.Domain.csproj" />
     <ProjectReference Include="..\Eventhub.Infra\Eventhub.Infra.csproj" />

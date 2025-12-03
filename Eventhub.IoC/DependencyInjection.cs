@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
         services.AddScoped<IGaleriaRepository, GaleriaRepository>();
         services.AddScoped<ITipoEventoRepository, TipoEventoRepository>();
+        services.AddScoped<IFotosRepository, FotosRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
@@ -42,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<INotificacaoService, NotificacaoService>();
         services.AddScoped<IGaleriaService, GaleriaService>();
         services.AddScoped<ITipoEventoService, TipoEventoService>();
+        services.AddScoped<IFotosService, FotosService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IKeycloakService, KeycloakService>();
 
