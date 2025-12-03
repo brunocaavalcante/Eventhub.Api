@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
+using System.Linq;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
@@ -45,13 +47,21 @@ public class AuthService : BaseService, IAuthService
             throw new ExceptionValidation("Usuário não encontrado.");
 
         var tokenResponse = await ObterTokenKeycloakAsync(loginRequest.Email, loginRequest.Password);
+        var keycloakId = ObterKeycloakIdDoToken(tokenResponse.AccessToken) ?? usuario.KeycloakId;
+
+        if (string.IsNullOrWhiteSpace(keycloakId))
+            throw new ExceptionValidation("Não foi possível identificar o usuário autenticado no Keycloak.");
+
+        var usuarioDetalhes = await _usuarioRepository.GetByKeycloakIdAsync(keycloakId)
+            ?? throw new ExceptionValidation("Usuário não encontrado no banco de dados.");
         
         return new LoginResponseDto
         {
             AccessToken = tokenResponse.AccessToken,
             RefreshToken = tokenResponse.RefreshToken,
             ExpiresIn = tokenResponse.ExpiresIn,
-            TokenType = tokenResponse.TokenType
+            TokenType = tokenResponse.TokenType,
+            Usuario = MapearUsuario(usuarioDetalhes)
         };
     }
 
@@ -157,5 +167,33 @@ public class AuthService : BaseService, IAuthService
         {
             throw new ExceptionValidation($"Erro ao autenticar: {ex.Message}");
         }
+    }
+
+    private static string? ObterKeycloakIdDoToken(string accessToken)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+            return null;
+
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(accessToken))
+            return null;
+
+        var jwt = handler.ReadJwtToken(accessToken);
+        return jwt.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+    }
+
+    private static UsuarioInfoDto MapearUsuario(Usuario usuario)
+    {
+        return new UsuarioInfoDto
+        {
+            Id = usuario.Id,
+            KeycloakId = usuario.KeycloakId,
+            Nome = usuario.Nome,
+            Email = usuario.Email,
+            Telefone = usuario.Telefone,
+            Foto = usuario.Foto,
+            DataCadastro = usuario.DataCadastro,
+            Status = usuario.Status
+        };
     }
 }

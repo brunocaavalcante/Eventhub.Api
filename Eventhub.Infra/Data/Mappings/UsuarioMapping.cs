@@ -12,6 +12,10 @@ public class UsuarioMapping : IEntityTypeConfiguration<Usuario>
 
         builder.HasKey(u => u.Id);
 
+        builder.Property(u => u.KeycloakId)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.Property(u => u.Nome)
             .IsRequired()
             .HasMaxLength(200);

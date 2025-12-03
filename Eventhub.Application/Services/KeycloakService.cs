@@ -16,7 +16,9 @@ public class KeycloakService : IKeycloakService
     private readonly string _keycloakTokenUrl;
     private readonly string _adminUsername;
     private readonly string _adminPassword;
-    private readonly string _realm;
+    private readonly string _adminClientId;
+    private readonly string _adminRealm;
+    private readonly string _targetRealm;
 
     public KeycloakService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
@@ -24,15 +26,21 @@ public class KeycloakService : IKeycloakService
         _httpClient = httpClientFactory.CreateClient();
 
         var authority = _configuration["Keycloak:Authority"] ?? throw new InvalidOperationException("Keycloak Authority não configurado");
+        _targetRealm = _configuration["Keycloak:Realm"] ?? throw new InvalidOperationException("Keycloak Realm não configurado");
         
-        _realm = authority.Split("/realms/").LastOrDefault() ?? "eventhub";
+        // Configuração do admin (usa master realm para obter token)
+        var adminSection = _configuration.GetSection("Keycloak:Admin");
+        _adminRealm = adminSection["Realm"] ?? "master";
+        _adminClientId = adminSection["ClientId"] ?? "admin-cli";
+        _adminUsername = adminSection["Username"] ?? "admin";
+        _adminPassword = adminSection["Password"] ?? throw new InvalidOperationException("Keycloak AdminPassword não configurado");
+
+        var baseUrl = authority.Contains("/realms/")
+            ? authority.Substring(0, authority.IndexOf("/realms/"))
+            : authority;
         
-        var baseUrl = authority.Replace($"/realms/{_realm}", "");
-        _keycloakAdminUrl = $"{baseUrl}/admin/realms/{_realm}/users";
-        _keycloakTokenUrl = $"{authority}/protocol/openid-connect/token";
-        
-        _adminUsername = _configuration["Keycloak:AdminUsername"] ?? "admin";
-        _adminPassword = _configuration["Keycloak:AdminPassword"] ?? throw new InvalidOperationException("Keycloak AdminPassword não configurado");
+        _keycloakAdminUrl = $"{baseUrl}/admin/realms/{_targetRealm}/users";
+        _keycloakTokenUrl = $"{baseUrl}/realms/{_adminRealm}/protocol/openid-connect/token";
     }
 
     public async Task<string> ObterAccessTokenAdminAsync()
@@ -41,7 +49,7 @@ public class KeycloakService : IKeycloakService
         {
             var parameters = new Dictionary<string, string>
             {
-                { "client_id", "admin-cli" },
+                { "client_id", _adminClientId },
                 { "username", _adminUsername },
                 { "password", _adminPassword },
                 { "grant_type", "password" }
