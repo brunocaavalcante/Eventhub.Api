@@ -7,6 +7,7 @@ using Eventhub.Infra.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Eventhub.Application.Profiles;
 
 namespace Eventhub.IoC;
 
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IProgramacaoEventoRepository, ProgramacaoEventoRepository>();
         services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
         services.AddScoped<IGaleriaRepository, GaleriaRepository>();
+        services.AddScoped<ITipoEventoRepository, TipoEventoRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
@@ -39,11 +41,15 @@ public static class DependencyInjection
         services.AddScoped<IProgramacaoEventoService, ProgramacaoEventoService>();
         services.AddScoped<INotificacaoService, NotificacaoService>();
         services.AddScoped<IGaleriaService, GaleriaService>();
+        services.AddScoped<ITipoEventoService, TipoEventoService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IKeycloakService, KeycloakService>();
 
         // HttpClient
         services.AddHttpClient();
+
+        // AutoMapper
+        services.AddAutoMapper(typeof(EventhubMappingProfile));
 
         return services;
     }
