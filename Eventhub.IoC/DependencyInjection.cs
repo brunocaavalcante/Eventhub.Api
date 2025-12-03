@@ -3,6 +3,7 @@ using Eventhub.Application.Services;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
+using Eventhub.Infra.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class DependencyInjection
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IPasswordSecurity, PasswordSecurity>();
 
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

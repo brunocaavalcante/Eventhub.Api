@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
-using System.Linq;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
@@ -14,6 +13,7 @@ public class AuthService : BaseService, IAuthService
 {
     private readonly IConfiguration _configuration;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IPasswordSecurity _passwordSecurity;
     private readonly HttpClient _httpClient;
     private readonly string _keycloakTokenUrl;
     private readonly string _keycloakLogoutUrl;
@@ -23,10 +23,12 @@ public class AuthService : BaseService, IAuthService
     public AuthService(
         IConfiguration configuration,
         IUsuarioRepository usuarioRepository,
+        IPasswordSecurity passwordSecurity,
         IHttpClientFactory httpClientFactory)
     {
         _configuration = configuration;
         _usuarioRepository = usuarioRepository;
+        _passwordSecurity = passwordSecurity;
         _httpClient = httpClientFactory.CreateClient();
 
         var authority = _configuration["Keycloak:Authority"] ?? throw new InvalidOperationException("Keycloak Authority não configurado");
@@ -47,13 +49,6 @@ public class AuthService : BaseService, IAuthService
             throw new ExceptionValidation("Usuário não encontrado.");
 
         var tokenResponse = await ObterTokenKeycloakAsync(loginRequest.Email, loginRequest.Password);
-        var keycloakId = ObterKeycloakIdDoToken(tokenResponse.AccessToken) ?? usuario.KeycloakId;
-
-        if (string.IsNullOrWhiteSpace(keycloakId))
-            throw new ExceptionValidation("Não foi possível identificar o usuário autenticado no Keycloak.");
-
-        var usuarioDetalhes = await _usuarioRepository.GetByKeycloakIdAsync(keycloakId)
-            ?? throw new ExceptionValidation("Usuário não encontrado no banco de dados.");
         
         return new LoginResponseDto
         {
@@ -61,7 +56,7 @@ public class AuthService : BaseService, IAuthService
             RefreshToken = tokenResponse.RefreshToken,
             ExpiresIn = tokenResponse.ExpiresIn,
             TokenType = tokenResponse.TokenType,
-            Usuario = MapearUsuario(usuarioDetalhes)
+            Usuario = MapearUsuario(usuario)
         };
     }
 
@@ -138,13 +133,23 @@ public class AuthService : BaseService, IAuthService
     {
         try
         {
+            string senhaDescriptografada;
+            try
+            {
+                senhaDescriptografada = _passwordSecurity.DecryptPassword(password);
+            }
+            catch (Exception ex)
+            {
+                throw new ExceptionValidation("Erro ao processar a senha.", ex);
+            }
+
             var parameters = new Dictionary<string, string>
             {
                 { "client_id", _clientId },
                 { "client_secret", _clientSecret },
                 { "grant_type", "password" },
                 { "username", email },
-                { "password", password }
+                { "password", senhaDescriptografada }
             };
 
             var content = new FormUrlEncodedContent(parameters);
