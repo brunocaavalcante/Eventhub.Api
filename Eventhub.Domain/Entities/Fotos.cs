@@ -10,7 +10,6 @@ public class Fotos
 
     // Relacionamentos
     public ICollection<TipoEvento> TipoEventos { get; set; } = new List<TipoEvento>();
-    public ICollection<EventoFoto> EventoFotos { get; set; } = new List<EventoFoto>();
     public ICollection<Galeria> Galerias { get; set; } = new List<Galeria>();
     public ICollection<ProgramacaoEvento> Programacoes { get; set; } = new List<ProgramacaoEvento>();
     public ICollection<NotificacaoTipo> NotificacaoTipos { get; set; } = new List<NotificacaoTipo>();

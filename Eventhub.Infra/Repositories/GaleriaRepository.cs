@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,5 +19,18 @@ public class GaleriaRepository : Repository<Galeria>, IGaleriaRepository
             .Include(g => g.Foto)
             .OrderBy(g => g.Ordem)
             .ToListAsync();
+    }
+
+    public async Task<bool> ExistsByTipoAsync(int idEvento, GaleriaTipo tipo, int? ignoreId = null)
+    {
+        var query = _dbSet.AsQueryable()
+            .Where(g => g.IdEvento == idEvento && g.Tipo == tipo);
+
+        if (ignoreId.HasValue)
+        {
+            query = query.Where(g => g.Id != ignoreId.Value);
+        }
+
+        return await query.AnyAsync();
     }
 }

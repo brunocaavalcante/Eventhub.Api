@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,6 +28,12 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
 
         builder.Property(g => g.Legenda)
             .HasMaxLength(500);
+
+        builder.Property(g => g.Tipo)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(GaleriaTipo.Galeria);
 
         builder.Property(g => g.Data)
             .IsRequired();

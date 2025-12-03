@@ -25,5 +25,8 @@ public class GaleriaValidation : AbstractValidator<Galeria>
 
         RuleFor(g => g.Data)
             .NotEmpty().WithMessage("A data é obrigatória.");
+
+        RuleFor(g => g.Tipo)
+            .IsInEnum().WithMessage("Tipo de foto inválido.");
     }
 }

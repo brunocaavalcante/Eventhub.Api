@@ -9,5 +9,6 @@ public class EventhubMappingProfile : Profile
     public EventhubMappingProfile()
     {
         CreateMap<TipoEvento, TipoEventoDto>();
+        CreateMap<Evento, EventoDto>();
     }
 }

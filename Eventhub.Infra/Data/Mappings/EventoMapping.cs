@@ -15,6 +15,10 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
         builder.Property(e => e.IdTipoEvento)
             .IsRequired();
 
+        builder.Property(e => e.Nome)
+            .IsRequired()
+            .HasMaxLength(255);
+
         builder.Property(e => e.IdStatus)
             .IsRequired();
 
@@ -66,11 +70,6 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
         builder.HasMany(e => e.UsuarioPerfis)
             .WithOne(up => up.Evento)
             .HasForeignKey(up => up.IdEvento)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(e => e.EventoFotos)
-            .WithOne(ef => ef.Evento)
-            .HasForeignKey(ef => ef.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.Galerias)

@@ -77,9 +77,6 @@ public class GaleriasController : BaseController
         }
     }
 
-    /// <summary>
-    /// Adiciona uma foto à galeria
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(CustomResponse<Galeria>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
@@ -96,9 +93,6 @@ public class GaleriasController : BaseController
         }
     }
 
-    /// <summary>
-    /// Atualiza uma foto da galeria
-    /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(CustomResponse<Galeria>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]

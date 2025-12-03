@@ -4,6 +4,7 @@ public class Evento
 {
     public int Id { get; set; }
     public int IdTipoEvento { get; set; }
+    public string Nome { get; set; } = string.Empty;
     public int IdStatus { get; set; }
     public int IdEndereco { get; set; }
     public int IdUsuarioCriador { get; set; }
@@ -19,7 +20,6 @@ public class Evento
     public EnderecoEvento Endereco { get; set; } = null!;
     public Usuario UsuarioCriador { get; set; } = null!;
     public ICollection<UsuarioPerfilEvento> UsuarioPerfis { get; set; } = new List<UsuarioPerfilEvento>();
-    public ICollection<EventoFoto> EventoFotos { get; set; } = new List<EventoFoto>();
     public ICollection<Galeria> Galerias { get; set; } = new List<Galeria>();
     public ICollection<ProgramacaoEvento> Programacoes { get; set; } = new List<ProgramacaoEvento>();
     public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
