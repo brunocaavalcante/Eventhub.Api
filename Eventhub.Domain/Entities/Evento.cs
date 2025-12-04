@@ -23,6 +23,6 @@ public class Evento
     public ICollection<Galeria> Galerias { get; set; } = new List<Galeria>();
     public ICollection<ProgramacaoEvento> Programacoes { get; set; } = new List<ProgramacaoEvento>();
     public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
-    public ICollection<Convidados> Convidados { get; set; } = new List<Convidados>();
+    public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
     public ICollection<EnvioConvite> EnviosConvite { get; set; } = new List<EnvioConvite>();
 }

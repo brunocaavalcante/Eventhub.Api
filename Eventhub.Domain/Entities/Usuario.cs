@@ -20,4 +20,5 @@ public class Usuario
     public ICollection<ComentarioFoto> Comentarios { get; set; } = new List<ComentarioFoto>();
     public ICollection<CurtidaFoto> Curtidas { get; set; } = new List<CurtidaFoto>();
     public ICollection<UsuarioPermissao> UsuarioPermissoes { get; set; } = new List<UsuarioPermissao>();
+    public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
 }

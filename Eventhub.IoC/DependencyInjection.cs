@@ -28,7 +28,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<IEventoRepository, EventoRepository>();
-        services.AddScoped<IConvidadosRepository, ConvidadosRepository>();
+        services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
         services.AddScoped<IProgramacaoEventoRepository, ProgramacaoEventoRepository>();
         services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
         services.AddScoped<IGaleriaRepository, GaleriaRepository>();
@@ -39,7 +39,7 @@ public static class DependencyInjection
         // Services
         services.AddScoped<IEventoService, EventoService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
-        services.AddScoped<IConvidadosService, ConvidadosService>();
+        services.AddScoped<IParticipanteService, ParticipanteService>();
         services.AddScoped<IProgramacaoEventoService, ProgramacaoEventoService>();
         services.AddScoped<INotificacaoService, NotificacaoService>();
         services.AddScoped<IGaleriaService, GaleriaService>();

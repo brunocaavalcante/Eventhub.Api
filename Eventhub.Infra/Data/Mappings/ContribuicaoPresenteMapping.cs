@@ -15,7 +15,7 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
         builder.Property(c => c.IdPresente)
             .IsRequired();
 
-        builder.Property(c => c.IdConvidado)
+        builder.Property(c => c.IdParticipante)
             .IsRequired();
 
         builder.Property(c => c.Nome)
@@ -49,9 +49,9 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
             .HasForeignKey(c => c.IdPresente)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(c => c.Convidado)
-            .WithMany(con => con.Contribuicoes)
-            .HasForeignKey(c => c.IdConvidado)
+        builder.HasOne(c => c.Participante)
+            .WithMany(participante => participante.Contribuicoes)
+            .HasForeignKey(c => c.IdParticipante)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

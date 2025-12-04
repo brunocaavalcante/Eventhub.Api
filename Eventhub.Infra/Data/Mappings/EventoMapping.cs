@@ -87,9 +87,9 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
             .HasForeignKey(n => n.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(e => e.Convidados)
-            .WithOne(c => c.Evento)
-            .HasForeignKey(c => c.IdEvento)
+        builder.HasMany(e => e.Participantes)
+            .WithOne(p => p.Evento)
+            .HasForeignKey(p => p.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.EnviosConvite)

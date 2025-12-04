@@ -10,4 +10,5 @@ public class Perfil
     // Relacionamentos
     public ICollection<UsuarioPerfilEvento> UsuarioPerfis { get; set; } = new List<UsuarioPerfilEvento>();
     public ICollection<PerfilPermissao> PerfilPermissoes { get; set; } = new List<PerfilPermissao>();
+    public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
 }

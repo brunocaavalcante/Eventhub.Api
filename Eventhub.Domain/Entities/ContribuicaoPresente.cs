@@ -4,7 +4,7 @@ public class ContribuicaoPresente
 {
     public int Id { get; set; }
     public int IdPresente { get; set; }
-    public int IdConvidado { get; set; }
+    public int IdParticipante { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
@@ -15,5 +15,5 @@ public class ContribuicaoPresente
 
     // Relacionamentos
     public Presente Presente { get; set; } = null!;
-    public Convidados Convidado { get; set; } = null!;
+    public Participante Participante { get; set; } = null!;
 }

@@ -12,7 +12,7 @@ public class EventhubDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public DbSet<Domain.Entities.Convidados> Convidados { get; set; } = null!;
+    public DbSet<Domain.Entities.Participante> Participantes { get; set; } = null!;
     public DbSet<Domain.Entities.Galeria> Galerias { get; set; } = null!;
     public DbSet<Domain.Entities.Usuario> Usuarios { get; set; } = null!;
     public DbSet<Domain.Entities.Fotos> Fotos { get; set; } = null!;
