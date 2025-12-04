@@ -24,4 +24,8 @@ public class EventhubDbContext : DbContext
     public DbSet<Domain.Entities.ProgramacaoEvento> ProgramacaoEvento { get; set; } = null!;
     public DbSet<Domain.Entities.ResponsavelProgramacao> ResponsavelProgramacao { get; set; } = null!;
     public DbSet<Domain.Entities.StatusProgramacao> StatusProgramacao { get; set; } = null!;
+    public DbSet<Domain.Entities.Perfil> Perfis { get; set; } = null!;
+    public DbSet<Domain.Entities.Permissao> Permissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.PerfilPermissao> PerfilPermissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.UsuarioPermissao> UsuarioPermissoes { get; set; } = null!;
 }

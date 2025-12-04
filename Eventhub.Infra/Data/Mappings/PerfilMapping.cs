@@ -16,10 +16,24 @@ public class PerfilMapping : IEntityTypeConfiguration<Perfil>
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(p => p.Icon)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(p => p.Status)
+            .IsRequired()
+            .HasMaxLength(1)
+            .HasDefaultValue('A');
+
         // Relacionamentos
         builder.HasMany(p => p.UsuarioPerfis)
             .WithOne(up => up.Perfil)
             .HasForeignKey(up => up.IdPerfil)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(p => p.PerfilPermissoes)
+            .WithOne(pp => pp.Perfil)
+            .HasForeignKey(pp => pp.IdPerfil)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
