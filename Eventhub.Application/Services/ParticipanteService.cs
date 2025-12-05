@@ -106,12 +106,6 @@ public class ParticipanteService : BaseService, IParticipanteService
 
     private async Task<Usuario> ObterOuCriarUsuarioAsync(CreateParticipanteDto participanteDto)
     {
-        if (participanteDto.IdUsuario.HasValue)
-        {
-            var usuario = await _usuarioRepository.GetByIdAsync(participanteDto.IdUsuario.Value)
-                ?? throw new ExceptionValidation("Usuário informado não foi localizado.");
-            return usuario;
-        }
 
         if (string.IsNullOrWhiteSpace(participanteDto.Nome) || string.IsNullOrWhiteSpace(participanteDto.Email))
             throw new ExceptionValidation("Nome e e-mail são obrigatórios para criar um usuário temporário.");
