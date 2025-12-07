@@ -900,9 +900,8 @@ namespace Eventhub.Infra.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<string>("Foto")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                    b.Property<int?>("IdFoto")
+                        .HasColumnType("int");
 
                     b.Property<string>("KeycloakId")
                         .IsRequired()
@@ -924,6 +923,8 @@ namespace Eventhub.Infra.Migrations
                         .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdFoto");
 
                     b.ToTable("Usuario", (string)null);
                 });
@@ -1314,6 +1315,16 @@ namespace Eventhub.Infra.Migrations
                         .HasForeignKey("IdFoto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Foto");
+                });
+
+            modelBuilder.Entity("Eventhub.Domain.Entities.Usuario", b =>
+                {
+                    b.HasOne("Eventhub.Domain.Entities.Fotos", "Foto")
+                        .WithMany()
+                        .HasForeignKey("IdFoto")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Foto");
                 });

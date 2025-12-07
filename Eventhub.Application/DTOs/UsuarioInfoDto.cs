@@ -7,7 +7,7 @@ public class UsuarioInfoDto
     public string Nome { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Telefone { get; set; }
-    public string? Foto { get; set; }
+    public string? FotoBase64 { get; set; }
     public DateTime DataCadastro { get; set; }
     public string Status { get; set; } = string.Empty;
 }

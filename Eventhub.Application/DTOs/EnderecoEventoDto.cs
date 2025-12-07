@@ -2,7 +2,6 @@ namespace Eventhub.Application.DTOs;
 
 public class EnderecoEventoDto
 {
-    public int Id { get; set; }
     public string Numero { get; set; } = string.Empty;
     public string Logradouro { get; set; } = string.Empty;
     public string Cep { get; set; } = string.Empty;

@@ -7,6 +7,10 @@ public class EventoValidation : AbstractValidator<Evento>
 {
     public EventoValidation()
     {
+        RuleFor(e => e.Nome)
+            .NotEmpty().WithMessage("A nome do evento é obrigatório.")
+            .MaximumLength(100).WithMessage("A nome do evento deve ter até 100 caracteres.");
+
         RuleFor(e => e.Descricao)
             .NotEmpty().WithMessage("A descrição do evento é obrigatória.")
             .MaximumLength(200).WithMessage("A descrição do evento deve ter até 200 caracteres.");

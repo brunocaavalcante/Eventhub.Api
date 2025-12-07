@@ -49,7 +49,7 @@ public class ParticipanteService : BaseService, IParticipanteService
         ExecutarValidacao(new ParticipanteValidation(), participante);
 
         await _participanteRepository.AddAsync(participante);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         var participanteSalvo = await _participanteRepository.GetByIdWithDetailsAsync(participante.Id) ?? participante;
         return _mapper.Map<ParticipanteDto>(participanteSalvo);

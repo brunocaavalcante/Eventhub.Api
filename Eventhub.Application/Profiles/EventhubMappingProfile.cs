@@ -10,12 +10,26 @@ public class EventhubMappingProfile : Profile
     {
         CreateMap<TipoEvento, TipoEventoDto>();
         CreateMap<Evento, EventoDto>();
+
+        CreateMap<EventoCadastroDto, Evento>()
+            .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco))
+            .ForMember(dest => dest.Galerias, opt => opt.Ignore())
+            .ForMember(dest => dest.Participantes, opt => opt.Ignore());
+
         CreateMap<Perfil, PerfilDto>();
-        CreateMap<Usuario, UsuarioInfoDto>();
+        CreateMap<EnderecoEventoDto, EnderecoEvento>().ReverseMap();
+
+        CreateMap<Usuario, UsuarioInfoDto>()
+            .ForMember(dest => dest.FotoBase64, opt => opt.MapFrom(src => src.Foto != null ? src.Foto.Base64 : null));
+
         CreateMap<Participante, ParticipanteDto>()
             .ForMember(dest => dest.Usuario, opt => opt.MapFrom(src => src.Usuario))
             .ForMember(dest => dest.Perfil, opt => opt.MapFrom(src => src.Perfil))
             .ForMember(dest => dest.CadastroPendente, opt => opt.MapFrom(src => src.CadastroPendente))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status));
+
+        CreateMap<UploadFotoDto, Fotos>().ReverseMap();
+        CreateMap<UpdateFotoDto, Fotos>().ReverseMap();
+        CreateMap<FotoDto, Fotos>().ReverseMap();
     }
 }

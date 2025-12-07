@@ -1,4 +1,5 @@
 using Eventhub.Api.Models;
+using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
 using Eventhub.Domain.Interfaces;
@@ -135,9 +136,9 @@ public class EventosController : BaseController
     /// Cria um novo evento
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(CustomResponse<Evento>), 201)]
+    [ProducesResponseType(typeof(CustomResponse<EventoCadastroDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
-    public async Task<IActionResult> Criar([FromBody] Evento evento)
+    public async Task<IActionResult> Criar([FromBody] EventoCadastroDto evento)
     {
         try
         {

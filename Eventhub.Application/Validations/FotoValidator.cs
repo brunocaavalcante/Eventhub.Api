@@ -15,14 +15,7 @@ public class UploadFotoValidator : AbstractValidator<UploadFotoDto>
 
         RuleFor(f => f.Base64)
             .NotEmpty().WithMessage("Arquivo é obrigatório.")
-            .Must(IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
-    }
-
-    private bool IsBase64String(string base64)
-    {
-        if (string.IsNullOrWhiteSpace(base64)) return false;
-        Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
-        return Convert.TryFromBase64String(base64, buffer, out _);
+            .Must(FotoBase64Helper.IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
     }
 }
 
@@ -41,13 +34,36 @@ public class UpdateFotoValidator : AbstractValidator<UpdateFotoDto>
 
         RuleFor(f => f.Base64)
             .NotEmpty().WithMessage("Arquivo é obrigatório.")
-            .Must(IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
+            .Must(FotoBase64Helper.IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
+    }
+}
+
+internal static class FotoBase64Helper
+{
+    public static bool IsBase64String(string? base64)
+    {
+        if (string.IsNullOrWhiteSpace(base64))
+            return false;
+
+        var sanitized = Sanitize(base64);
+        Span<byte> buffer = new Span<byte>(new byte[sanitized.Length]);
+        return Convert.TryFromBase64String(sanitized, buffer, out _);
     }
 
-    private bool IsBase64String(string base64)
+    private static string Sanitize(string value)
     {
-        if (string.IsNullOrWhiteSpace(base64)) return false;
-        Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
-        return Convert.TryFromBase64String(base64, buffer, out _);
+        var trimmed = value.Trim();
+        const string dataPrefix = "data:";
+
+        if (trimmed.StartsWith(dataPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var commaIndex = trimmed.IndexOf(',');
+            if (commaIndex >= 0 && commaIndex < trimmed.Length - 1)
+            {
+                return trimmed[(commaIndex + 1)..];
+            }
+        }
+
+        return trimmed;
     }
 }

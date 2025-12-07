@@ -25,7 +25,7 @@ public class GaleriaService : BaseService, IGaleriaService
         await ValidarFotoCapaUnicaAsync(galeria);
 
         await _galeriaRepository.AddAsync(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
         return galeria;
     }
 
@@ -40,7 +40,7 @@ public class GaleriaService : BaseService, IGaleriaService
         await ValidarFotoCapaUnicaAsync(galeria);
 
         _galeriaRepository.Update(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
         return galeria;
     }
 
@@ -51,7 +51,7 @@ public class GaleriaService : BaseService, IGaleriaService
             throw new ExceptionValidation("Galeria não encontrada.");
 
         _galeriaRepository.Remove(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Galeria>> ObterPorEventoAsync(int idEvento)

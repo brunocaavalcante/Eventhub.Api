@@ -28,9 +28,10 @@ public class FotosService : BaseService, IFotosService
         var foto = _mapper.Map<Fotos>(dto);
         foto.DataUpload = DateTime.UtcNow;
         foto.TamanhoKB = (int)(Convert.FromBase64String(dto.Base64).Length / 1024);
-        
+
         await _fotosRepository.AddAsync(foto);
         await _unitOfWork.SaveChangesAsync();
+
         return _mapper.Map<FotoDto>(foto);
     }
 

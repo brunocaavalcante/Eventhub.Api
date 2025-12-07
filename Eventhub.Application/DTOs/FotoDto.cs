@@ -13,6 +13,7 @@ public class UploadFotoDto
 {
     public string NomeArquivo { get; set; } = string.Empty;
     public string Base64 { get; set; } = string.Empty;
+    public string TipoImagem { get; set; } = string.Empty;
 }
 
 public class UpdateFotoDto
