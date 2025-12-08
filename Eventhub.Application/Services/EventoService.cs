@@ -14,18 +14,33 @@ public class EventoService : BaseService, IEventoService
     private readonly IFotosService _fotosService;
     private readonly IParticipanteService _participanteService;
     private readonly IEventoRepository _eventoRepository;
+    private readonly IStatusEventoRepository _statusEventoRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public EventoService(IEventoRepository eventoRepository, IUnitOfWork unitOfWork, IMapper mapper, 
-    IFotosService fotosService, 
-    IParticipanteService participanteService)
+    public EventoService(IEventoRepository eventoRepository, IUnitOfWork unitOfWork, IMapper mapper,
+    IFotosService fotosService,
+    IParticipanteService participanteService,
+    IStatusEventoRepository statusEventoRepository)
     {
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _fotosService = fotosService;
         _participanteService = participanteService;
+        _statusEventoRepository = statusEventoRepository;
+    }
+
+    public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
+    {
+        var eventos = await _eventoRepository.GetEventosByUsuarioAsync(idUsuario);
+        return _mapper.Map<IEnumerable<EventoAtivoDto>>(eventos);
+    }
+
+    public async Task<IEnumerable<StatusEventoDto>> ObterStatusEventosAsync()
+    {
+        var statusEventos = await _statusEventoRepository.GetAllAsync();
+        return _mapper.Map<IEnumerable<StatusEventoDto>>(statusEventos);
     }
 
     public async Task<EventoCadastroDto> AdicionarAsync(EventoCadastroDto eventoDto)
@@ -41,9 +56,9 @@ public class EventoService : BaseService, IEventoService
 
         await _eventoRepository.AddAsync(evento);
         await _unitOfWork.SaveChangesAsync();
-        
 
-        foreach(var imageDto in eventoDto.Imagens)
+
+        foreach (var imageDto in eventoDto.Imagens)
         {
             var fotoDto = await _fotosService.UploadAsync(imageDto);
 

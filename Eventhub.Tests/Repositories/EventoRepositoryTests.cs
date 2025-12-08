@@ -149,7 +149,7 @@ public class EventoRepositoryTests
         var repo = new EventoRepository(context);
 
         // Act
-        var eventos = (await repo.GetEventosAtivosByUsuarioAsync(idUsuario)).ToList();
+        var eventos = (await repo.GetEventosByUsuarioAsync(idUsuario)).ToList();
 
         // Assert
         eventos.Should().HaveCount(2);

@@ -34,7 +34,7 @@ public class AuthService : BaseService, IAuthService
         var authority = _configuration["Keycloak:Authority"] ?? throw new InvalidOperationException("Keycloak Authority não configurado");
         _keycloakTokenUrl = $"{authority}/protocol/openid-connect/token";
         _keycloakLogoutUrl = $"{authority}/protocol/openid-connect/logout";
-        
+
         _clientId = _configuration["Keycloak:ClientId"] ?? throw new InvalidOperationException("Keycloak ClientId não configurado");
         _clientSecret = _configuration["Keycloak:ClientSecret"] ?? string.Empty;
     }
@@ -49,7 +49,7 @@ public class AuthService : BaseService, IAuthService
             throw new ExceptionValidation("Usuário não encontrado.");
 
         var tokenResponse = await ObterTokenKeycloakAsync(loginRequest.Email, loginRequest.Password);
-        
+
         return new LoginResponseDto
         {
             AccessToken = tokenResponse.AccessToken,
@@ -196,7 +196,7 @@ public class AuthService : BaseService, IAuthService
             Nome = usuario.Nome,
             Email = usuario.Email,
             Telefone = usuario.Telefone,
-            Foto = usuario.Foto,
+            FotoBase64 = usuario.Foto != null ? usuario.Foto.Base64 : "",
             DataCadastro = usuario.DataCadastro,
             Status = usuario.Status
         };

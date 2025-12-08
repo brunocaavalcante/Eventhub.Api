@@ -4,6 +4,9 @@ using Eventhub.Domain.Exceptions;
 using Eventhub.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
+using Eventhub.Application.DTOs;
+using Eventhub.Application.Interfaces;
+using AutoMapper;
 
 namespace Eventhub.Tests.Services;
 
@@ -12,30 +15,38 @@ public class EventoServiceTests
     private readonly Mock<IEventoRepository> _eventoRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly EventoService _eventoService;
+    private readonly Mock<IFotosService> _fotoService;
+    private readonly Mock<IParticipanteService> _participanteService;
+    private readonly Mock<IStatusEventoRepository> _statusEventoRepositoryMock;
+    private readonly Mock<IMapper> _mapperMock;
 
     public EventoServiceTests()
     {
         _eventoRepositoryMock = new Mock<IEventoRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object);
+        _fotoService = new Mock<IFotosService>();
+        _participanteService = new Mock<IParticipanteService>();
+        _statusEventoRepositoryMock = new Mock<IStatusEventoRepository>();
+        _mapperMock = new Mock<IMapper>();
+        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object, _mapperMock.Object, _fotoService.Object, _participanteService.Object, _statusEventoRepositoryMock.Object);
     }
 
     [Fact]
     public async Task AdicionarAsync_DeveAdicionarEvento_QuandoDadosValidos()
     {
         // Arrange
-        var evento = new Evento
+        var evento = new EventoCadastroDto
         {
-            Id = 1,
+            Nome = "Evento Teste",
             IdTipoEvento = 1,
-            IdStatus = 1,
-            IdEndereco = 1,
             IdUsuarioCriador = 1,
             DataInicio = DateTime.Now.AddDays(1),
             DataFim = DateTime.Now.AddDays(2),
             Descricao = "Descrição do evento",
             MaxConvidado = 100,
-            DataInclusao = DateTime.Now
+            Endereco = new(),
+            Imagens = new(),
+            Participantes = new()
         };
 
         _eventoRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Evento>()))
@@ -57,11 +68,18 @@ public class EventoServiceTests
     public async Task AdicionarAsync_DeveLancarExcecao_QuandoDescricaoVazia()
     {
         // Arrange
-        var evento = new Evento
+        var evento = new EventoCadastroDto
         {
-            Descricao = "", // Descrição inválida
+            Nome = "Evento Teste",
+            IdTipoEvento = 1,
+            IdUsuarioCriador = 1,
             DataInicio = DateTime.Now.AddDays(1),
-            DataFim = DateTime.Now.AddDays(2)
+            DataFim = DateTime.Now.AddDays(2),
+            Descricao = "",
+            MaxConvidado = 100,
+            Endereco = new(),
+            Imagens = new(),
+            Participantes = new()
         };
 
         // Act
@@ -75,11 +93,18 @@ public class EventoServiceTests
     public async Task AdicionarAsync_DeveLancarExcecao_QuandoDataFimMenorQueDataInicio()
     {
         // Arrange
-        var evento = new Evento
+        var evento = new EventoCadastroDto
         {
-            Descricao = "Evento Teste",
+            Nome = "Evento Teste",
+            IdTipoEvento = 1,
+            IdUsuarioCriador = 1,
             DataInicio = DateTime.Now.AddDays(2),
-            DataFim = DateTime.Now.AddDays(1) // Data fim menor que início
+            DataFim = DateTime.Now.AddDays(1), // Data fim menor que início
+            Descricao = "Evento Teste",
+            MaxConvidado = 100,
+            Endereco = new(),
+            Imagens = new(),
+            Participantes = new()
         };
 
         // Act

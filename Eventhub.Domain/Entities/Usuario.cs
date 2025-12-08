@@ -6,12 +6,13 @@ public class Usuario
     public string KeycloakId { get; set; } = string.Empty;
     public string Nome { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string? Foto { get; set; }
+    public int? IdFoto { get; set; }
     public string? Telefone { get; set; }
     public DateTime DataCadastro { get; set; }
     public string Status { get; set; } = string.Empty;
 
     // Relacionamentos
+    public Fotos? Foto { get; set; }
     public ICollection<Evento> Eventos { get; set; } = new List<Evento>();
     public ICollection<UsuarioPerfilEvento> UsuarioPerfis { get; set; } = new List<UsuarioPerfilEvento>();
     public ICollection<ResponsavelProgramacao> ResponsaveisProgramacao { get; set; } = new List<ResponsavelProgramacao>();

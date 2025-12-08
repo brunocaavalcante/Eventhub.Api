@@ -7,5 +7,5 @@ public interface IEventoRepository : IRepository<Evento>
     Task<IEnumerable<Evento>> GetByUsuarioAsync(int idUsuario);
     Task<IEnumerable<Evento>> GetByStatusAsync(int idStatus);
     Task<IEnumerable<Evento>> GetByTipoAsync(int idTipo);
-    Task<IEnumerable<Evento>> GetEventosAtivosByUsuarioAsync(int idUsuario);
+    Task<IEnumerable<Evento>> GetEventosByUsuarioAsync(int idUsuario);
 }

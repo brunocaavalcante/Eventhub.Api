@@ -24,8 +24,13 @@ public class UsuarioMapping : IEntityTypeConfiguration<Usuario>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(u => u.Foto)
-            .HasMaxLength(500);
+        builder.Property(u => u.IdFoto)
+            .IsRequired(false);
+
+        builder.HasOne(u => u.Foto)
+            .WithMany()
+            .HasForeignKey(u => u.IdFoto)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(u => u.Telefone)
             .HasMaxLength(20);

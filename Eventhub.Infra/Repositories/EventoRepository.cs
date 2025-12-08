@@ -39,13 +39,13 @@ public class EventoRepository : Repository<Evento>, IEventoRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Evento>> GetEventosAtivosByUsuarioAsync(int idUsuario)
+    public async Task<IEnumerable<Evento>> GetEventosByUsuarioAsync(int idUsuario)
     {
         return await _dbSet
-            .Where(e => e.IdUsuarioCriador == idUsuario && e.DataFim >= DateTime.Now)
+            .Where(e => e.IdUsuarioCriador == idUsuario)
             .Include(e => e.TipoEvento)
             .Include(e => e.Status)
-            .Include(e => e.Endereco)
+            .Include(e => e.Galerias).ThenInclude(g => g.Foto)
             .OrderBy(e => e.DataInicio)
             .ToListAsync();
     }

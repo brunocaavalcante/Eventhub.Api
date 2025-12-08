@@ -20,23 +20,6 @@ public class EventosController : BaseController
         _eventoRepository = eventoRepository;
     }
 
-    /// <summary>
-    /// Obtém todos os eventos
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
-    public async Task<IActionResult> ObterTodos()
-    {
-        try
-        {
-            var eventos = await _eventoRepository.GetAllAsync();
-            return CustomResponse(eventos);
-        }
-        catch (Exception ex)
-        {
-            return TratarErros(ex);
-        }
-    }
 
     /// <summary>
     /// Obtém um evento por ID
@@ -64,12 +47,12 @@ public class EventosController : BaseController
     /// Obtém eventos por usuário criador
     /// </summary>
     [HttpGet("usuario/{idUsuario}")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<EventoAtivoDto>>), 200)]
     public async Task<IActionResult> ObterPorUsuario(int idUsuario)
     {
         try
         {
-            var eventos = await _eventoRepository.GetByUsuarioAsync(idUsuario);
+            var eventos = await _eventoService.ObterEventosPorUsuarioAsync(idUsuario);
             return CustomResponse(eventos);
         }
         catch (Exception ex)
@@ -115,15 +98,15 @@ public class EventosController : BaseController
     }
 
     /// <summary>
-    /// Obtém eventos ativos de um usuário
+    /// Obtém eventos por tipo
     /// </summary>
-    [HttpGet("usuario/{idUsuario}/ativos")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
-    public async Task<IActionResult> ObterEventosAtivos(int idUsuario)
+    [HttpGet("status")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<StatusEventoDto>>), 200)]
+    public async Task<IActionResult> ObterStatusEventos()
     {
         try
         {
-            var eventos = await _eventoRepository.GetEventosAtivosByUsuarioAsync(idUsuario);
+            var eventos = await _eventoService.ObterStatusEventosAsync();
             return CustomResponse(eventos);
         }
         catch (Exception ex)
