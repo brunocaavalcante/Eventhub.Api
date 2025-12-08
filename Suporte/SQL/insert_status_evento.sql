@@ -1,6 +1,9 @@
-INSERT INTO StatusEvento (Id,Descricao) VALUES
-  (1,'Rascunho'),
-  (2,'Ativo'),
-  (3,'Cancelado'),
-  (4,'Publicado'),
-  (5,'Encerrado');
+DELETE 
+FROM StatusEvento;
+
+INSERT INTO StatusEvento (Id, Descricao)
+VALUES (1, 'Ativo'),
+  (2, 'Inativo'),
+  (3, 'Agendado'),
+  (4, 'Cancelado'),
+  (5, 'Concluido');

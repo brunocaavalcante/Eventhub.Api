@@ -35,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<ITipoEventoRepository, TipoEventoRepository>();
         services.AddScoped<IFotosRepository, FotosRepository>();
         services.AddScoped<IPerfilRepository, PerfilRepository>();
+        services.AddScoped<IStatusEventoRepository, StatusEventoRepository>();
+        services.AddScoped<IEnvioConviteRepository, EnvioConviteRepository>();
+        services.AddScoped<IConviteRepository, ConviteRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
@@ -48,6 +51,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IKeycloakService, KeycloakService>();
         services.AddScoped<IPerfilService, PerfilService>();
+        services.AddScoped<IEnvioConviteService, EnvioConviteService>();
+        services.AddScoped<IConviteService, ConviteService>();
 
         // HttpClient
         services.AddHttpClient();

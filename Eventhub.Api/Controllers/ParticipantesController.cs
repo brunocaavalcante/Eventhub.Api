@@ -10,10 +10,26 @@ namespace Eventhub.Api.Controllers;
 public class ParticipantesController : BaseController
 {
     private readonly IParticipanteService _participanteService;
+    private readonly IEnvioConviteService _envioConviteService;
 
-    public ParticipantesController(IParticipanteService participanteService)
+    public ParticipantesController(IParticipanteService participanteService, IEnvioConviteService envioConviteService)
     {
         _participanteService = participanteService;
+        _envioConviteService = envioConviteService;
+    }
+    [HttpGet("evento/{idEvento}/confirmados")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<EnvioConviteDto>>), 200)]
+    public async Task<IActionResult> ObterConfirmados(int idEvento)
+    {
+        try
+        {
+            var confirmados = await _envioConviteService.GetConfirmadosByEventoAsync(idEvento);
+            return CustomResponse(confirmados);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
     }
 
     [HttpGet("evento/{idEvento}")]

@@ -10,11 +10,12 @@ namespace Eventhub.Tests.Controllers
     public class ParticipantesControllerTests
     {
         private readonly Mock<IParticipanteService> _serviceMock = new();
+        private readonly Mock<IEnvioConviteService> _envioConviteServiceMock = new();
         private readonly ParticipantesController _controller;
 
         public ParticipantesControllerTests()
         {
-            _controller = new ParticipantesController(_serviceMock.Object);
+            _controller = new ParticipantesController(_serviceMock.Object, _envioConviteServiceMock.Object);
         }
 
         [Fact]
