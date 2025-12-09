@@ -7,6 +7,7 @@ using Moq;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using AutoMapper;
+using Eventhub.Tests.Helpers;
 
 namespace Eventhub.Tests.Services;
 
@@ -18,7 +19,7 @@ public class EventoServiceTests
     private readonly Mock<IFotosService> _fotoService;
     private readonly Mock<IParticipanteService> _participanteService;
     private readonly Mock<IStatusEventoRepository> _statusEventoRepositoryMock;
-    private readonly Mock<IMapper> _mapperMock;
+    private readonly IMapper _mapper;
 
     public EventoServiceTests()
     {
@@ -27,8 +28,34 @@ public class EventoServiceTests
         _fotoService = new Mock<IFotosService>();
         _participanteService = new Mock<IParticipanteService>();
         _statusEventoRepositoryMock = new Mock<IStatusEventoRepository>();
-        _mapperMock = new Mock<IMapper>();
-        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object, _mapperMock.Object, _fotoService.Object, _participanteService.Object, _statusEventoRepositoryMock.Object);
+        _mapper = AutoMapperHelper.CreateMapper();
+        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object, _mapper, _fotoService.Object, _participanteService.Object, _statusEventoRepositoryMock.Object);
+    }
+
+    [Fact]
+    public async Task ObterPorIdAsync_DeveRetornarEventoDto_QuandoEventoExiste()
+    {
+        // Arrange
+        var eventoId = 1;
+        var evento = new Evento
+        {
+            Id = eventoId,
+            Nome = "Evento Teste",
+            Descricao = "Descrição do evento",
+            DataInicio = DateTime.Now,
+            DataFim = DateTime.Now.AddDays(1)
+        };
+
+        _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId))
+            .ReturnsAsync(evento);
+
+        // Act
+        var resultado = await _eventoService.ObterPorIdAsync(eventoId);
+
+        // Assert
+        resultado.Should().NotBeNull();
+        resultado!.Id.Should().Be(eventoId);
+        resultado.Nome.Should().Be("Evento Teste");
     }
 
     [Fact]
@@ -44,7 +71,13 @@ public class EventoServiceTests
             DataFim = DateTime.Now.AddDays(2),
             Descricao = "Descrição do evento",
             MaxConvidado = 100,
-            Endereco = new(),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
             Imagens = new(),
             Participantes = new()
         };
@@ -77,7 +110,13 @@ public class EventoServiceTests
             DataFim = DateTime.Now.AddDays(2),
             Descricao = "",
             MaxConvidado = 100,
-            Endereco = new(),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
             Imagens = new(),
             Participantes = new()
         };
@@ -102,7 +141,13 @@ public class EventoServiceTests
             DataFim = DateTime.Now.AddDays(1), // Data fim menor que início
             Descricao = "Evento Teste",
             MaxConvidado = 100,
-            Endereco = new(),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
             Imagens = new(),
             Participantes = new()
         };
@@ -128,6 +173,7 @@ public class EventoServiceTests
             IdUsuarioCriador = 1,
             DataInicio = DateTime.Now.AddDays(1),
             DataFim = DateTime.Now.AddDays(2),
+            Nome = "Evento Teste",
             Descricao = "Descrição atualizada",
             MaxConvidado = 150,
             DataInclusao = DateTime.Now

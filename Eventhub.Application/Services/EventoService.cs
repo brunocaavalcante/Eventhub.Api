@@ -37,6 +37,14 @@ public class EventoService : BaseService, IEventoService
         return _mapper.Map<IEnumerable<EventoAtivoDto>>(eventos);
     }
 
+    public async Task<EventoDto?> ObterPorIdAsync(int id)
+    {
+        var evento = await _eventoRepository.GetByIdAsync(id);
+        if (evento == null) return null;
+
+        return _mapper.Map<EventoDto>(evento);
+    }
+
     public async Task<IEnumerable<StatusEventoDto>> ObterStatusEventosAsync()
     {
         var statusEventos = await _statusEventoRepository.GetAllAsync();

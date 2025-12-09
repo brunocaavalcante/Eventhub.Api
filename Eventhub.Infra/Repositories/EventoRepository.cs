@@ -11,14 +11,13 @@ public class EventoRepository : Repository<Evento>, IEventoRepository
     {
     }
 
-    public async Task<IEnumerable<Evento>> GetByUsuarioAsync(int idUsuario)
+    public async Task<Evento?> GetByIdAsync(int id)
     {
         return await _dbSet
-            .Where(e => e.IdUsuarioCriador == idUsuario)
             .Include(e => e.TipoEvento)
             .Include(e => e.Status)
             .Include(e => e.Endereco)
-            .ToListAsync();
+            .FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<IEnumerable<Evento>> GetByStatusAsync(int idStatus)

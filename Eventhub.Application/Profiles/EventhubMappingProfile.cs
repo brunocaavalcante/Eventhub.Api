@@ -33,11 +33,16 @@ public class EventhubMappingProfile : Profile
         CreateMap<FotoDto, Fotos>().ReverseMap();
 
         CreateMap<Evento, EventoAtivoDto>()
+            .ForMember(dest => dest.IdTipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Id))
             .ForMember(dest => dest.TipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Nome))
             .ForMember(dest => dest.IdStatus, opt => opt.MapFrom(src => src.Status.Id))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Descricao))
             .ForMember(dest => dest.FotoCapaBase64, opt => opt.MapFrom(src =>
                 src.Galerias != null && src.Galerias.FirstOrDefault(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa) != null
                     ? src.Galerias.FirstOrDefault(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa).Foto.Base64 : ""));
+        
+        CreateMap<Evento, EventoDto>()
+            .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();
     }

@@ -20,18 +20,14 @@ public class EventosController : BaseController
         _eventoRepository = eventoRepository;
     }
 
-
-    /// <summary>
-    /// Obtém um evento por ID
-    /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(CustomResponse<Evento>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<EventoDto>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
     public async Task<IActionResult> ObterPorId(int id)
     {
         try
         {
-            var evento = await _eventoRepository.GetByIdAsync(id);
+            var evento = await _eventoService.ObterPorIdAsync(id);
             if (evento == null)
                 return CustomResponse<object>(404, "Evento não encontrado.");
 
