@@ -13,4 +13,13 @@ public class PerfilRepository : Repository<Perfil>, IPerfilRepository
     {
         return await _dbSet.Where(p => p.Status == 'A').ToListAsync();
     }
+
+    public async Task<Perfil> ObterPermissoesPerfil(int idPerfil)
+    {
+        return await _dbSet
+            .Include(p => p.PerfilPermissoes)
+                .ThenInclude(pp => pp.Permissao)
+                .ThenInclude(m => m.Modulo)
+            .FirstOrDefaultAsync(p => p.Id == idPerfil) ?? new Perfil();
+    }
 }

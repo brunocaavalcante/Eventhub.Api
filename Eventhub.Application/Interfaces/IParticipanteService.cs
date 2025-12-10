@@ -9,4 +9,5 @@ public interface IParticipanteService
     Task RemoverAsync(int id);
     Task<IEnumerable<ParticipanteDto>> ObterPorEventoAsync(int idEvento);
     Task<ParticipanteDto?> ObterPorIdAsync(int id);
+    Task<ParticipanteDto?> ObterPorUsuarioEventoAsync(int idParticipante, int idEvento);
 }

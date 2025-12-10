@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using Eventhub.Application.DTOs;
 using Eventhub.Domain.Entities;
@@ -16,7 +17,14 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Galerias, opt => opt.Ignore())
             .ForMember(dest => dest.Participantes, opt => opt.Ignore());
 
+        CreateMap<Modulo, ModuloDto>();
+        CreateMap<Permissao, PermissaoDto>();
+
         CreateMap<Perfil, PerfilDto>();
+        CreateMap<Perfil, PermissoesPerfilDto>()
+            .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Descricao))
+            .ForMember(dest => dest.Permissoes, opt => opt.MapFrom(src => src.PerfilPermissoes.Select(pp => pp.Permissao)));
+            
         CreateMap<EnderecoEventoDto, EnderecoEvento>().ReverseMap();
 
         CreateMap<Usuario, UsuarioInfoDto>()
@@ -38,10 +46,15 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.IdStatus, opt => opt.MapFrom(src => src.Status.Id))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Descricao))
             .ForMember(dest => dest.FotoCapaBase64, opt => opt.MapFrom(src =>
-                src.Galerias != null && src.Galerias.FirstOrDefault(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa) != null
-                    ? src.Galerias.FirstOrDefault(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa).Foto.Base64 : ""));
+                src.Galerias != null
+                    ? src.Galerias
+                        .Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa && g.Foto != null)
+                        .Select(g => g.Foto.Base64)
+                        .FirstOrDefault() ?? string.Empty
+                    : string.Empty));
         
         CreateMap<Evento, EventoDto>()
+            .ForMember(dest => dest.IdTipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Id))
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();

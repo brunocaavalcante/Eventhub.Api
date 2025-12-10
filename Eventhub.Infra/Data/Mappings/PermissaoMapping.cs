@@ -20,9 +20,8 @@ public class PermissaoMapping : IEntityTypeConfiguration<Permissao>
             .IsRequired()
             .HasMaxLength(500);
 
-        builder.Property(p => p.Modulo)
-            .IsRequired()
-            .HasMaxLength(50);
+        builder.Property(p => p.IdModulo)
+            .IsRequired();
 
         builder.Property(p => p.Chave)
             .IsRequired()
@@ -32,6 +31,11 @@ public class PermissaoMapping : IEntityTypeConfiguration<Permissao>
             .IsUnique();
 
         // Relacionamentos
+        builder.HasOne(p => p.Modulo)
+            .WithMany(m => m.Permissoes)
+            .HasForeignKey(p => p.IdModulo)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasMany(p => p.PerfilPermissoes)
             .WithOne(pp => pp.Permissao)
             .HasForeignKey(pp => pp.IdPermissao)

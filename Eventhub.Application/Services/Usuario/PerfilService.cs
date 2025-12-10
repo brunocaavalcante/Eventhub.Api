@@ -21,4 +21,10 @@ public class PerfilService : IPerfilService
         var perfis = await _perfilRepository.GetPerfisAtivosAsync();
         return _mapper.Map<IEnumerable<PerfilDto>>(perfis);
     }
+
+    public async Task<PermissoesPerfilDto> ObterPermissoesPerfilAsync(int idPerfil)
+    {
+        var perfil = await _perfilRepository.ObterPermissoesPerfil(idPerfil);
+        return _mapper.Map<PermissoesPerfilDto>(perfil);
+    }
 }

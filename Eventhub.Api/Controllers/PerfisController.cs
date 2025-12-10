@@ -30,4 +30,42 @@ public class PerfisController : BaseController
             return TratarErros(ex);
         }
     }
+
+    [HttpGet("{idPerfil}/permissoes")]
+    [ProducesResponseType(typeof(CustomResponse<PermissoesPerfilDto>), 200)]
+    public async Task<IActionResult> ObterPermissoesPerfil(int idPerfil)
+    {
+        try
+        {
+            var permissoesDto = await _perfilService.ObterPermissoesPerfilAsync(idPerfil);
+            return CustomResponse(permissoesDto);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpGet("{idPerfil}/modulos")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<ModuloDto>>), 200)]
+    public async Task<IActionResult> ObterModulosPorPerfil(int idPerfil)
+    {
+        try
+        {
+            var modulos = new List<ModuloDto>();
+            var permissoesDto = await _perfilService.ObterPermissoesPerfilAsync(idPerfil);
+
+            foreach (var permissao in permissoesDto.Permissoes)
+            {
+                if (!modulos.Any(m => m.Id == permissao.Modulo.Id))
+                    modulos.Add(permissao.Modulo);
+            }
+
+            return CustomResponse(modulos);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
 }

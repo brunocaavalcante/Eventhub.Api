@@ -66,6 +66,25 @@ public class ParticipantesController : BaseController
         }
     }
 
+    [HttpGet("evento/{idEvento}/usuario/{idUsuario}")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPorEventoUsuario(int idEvento, int idUsuario)
+    {
+        try
+        {
+            var participante = await _participanteService.ObterPorUsuarioEventoAsync(idUsuario, idEvento);
+            if (participante == null)
+                return CustomResponse<object>(404, "Participante não encontrado.");
+
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]

@@ -103,6 +103,12 @@ public class ParticipanteService : BaseService, IParticipanteService
         var participante = await _participanteRepository.GetByIdWithDetailsAsync(id);
         return participante == null ? null : _mapper.Map<ParticipanteDto>(participante);
     }
+    
+    public async Task<ParticipanteDto?> ObterPorUsuarioEventoAsync(int idParticipante, int idEvento)
+    {
+        var participante = await _participanteRepository.GetByUsuarioEventoWithDetailsAsync(idParticipante, idEvento);
+        return participante == null ? null : _mapper.Map<ParticipanteDto>(participante);
+    }
 
     private async Task<Usuario> ObterOuCriarUsuarioAsync(CreateParticipanteDto participanteDto)
     {

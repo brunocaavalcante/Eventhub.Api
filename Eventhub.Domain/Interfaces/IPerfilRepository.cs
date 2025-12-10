@@ -5,4 +5,5 @@ namespace Eventhub.Domain.Interfaces;
 public interface IPerfilRepository : IRepository<Perfil>
 {
     Task<IEnumerable<Perfil>> GetPerfisAtivosAsync();
+    Task<Perfil> ObterPermissoesPerfil(int idPerfil);
 }

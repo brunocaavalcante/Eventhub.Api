@@ -5,7 +5,7 @@ public class ParticipanteDto
     public int Id { get; set; }
     public int IdEvento { get; set; }
     public PerfilDto? Perfil { get; set; }
-    public UsuarioInfoDto Usuario { get; set; } = new();
+    public UsuarioInfoDto? Usuario { get; set; }
     public bool CadastroPendente { get; set; }
     public string Status { get; set; } = string.Empty;
 }
