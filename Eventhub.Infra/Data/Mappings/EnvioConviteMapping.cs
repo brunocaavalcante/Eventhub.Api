@@ -24,9 +24,10 @@ public class EnvioConviteMapping : IEntityTypeConfiguration<EnvioConvite>
         builder.Property(e => e.DataEnvio)
             .IsRequired();
 
-        builder.Property(e => e.Status)
-            .IsRequired()
-            .HasMaxLength(50);
+
+        builder.Property(e => e.IdStatusEnvioConvite)
+            .IsRequired(false);
+
 
         builder.Property(e => e.MensagemResposta)
             .HasMaxLength(1000);
@@ -35,6 +36,11 @@ public class EnvioConviteMapping : IEntityTypeConfiguration<EnvioConvite>
             .IsRequired();
 
         // Relacionamentos
+        builder.HasOne(e => e.StatusEnvioConvite)
+            .WithMany()
+            .HasForeignKey(e => e.IdStatusEnvioConvite)
+            .OnDelete(DeleteBehavior.SetNull);
+            
         builder.HasOne(e => e.Convite)
             .WithMany(c => c.EnviosConvite)
             .HasForeignKey(e => e.IdConvite)

@@ -92,6 +92,12 @@ public class ParticipanteService : BaseService, IParticipanteService
         await _unitOfWork.CommitTransactionAsync();
     }
 
+    public async Task<IEnumerable<ListarConvidadoDto>> ObterConvidadosPorEventoAsync(int idEvento)
+    {
+        var convidados = await _participanteRepository.ObterConvidadoAcompanhantesPorEvento(idEvento);
+        return _mapper.Map<IEnumerable<ListarConvidadoDto>>(convidados);
+    }
+
     public async Task<IEnumerable<ParticipanteDto>> ObterPorEventoAsync(int idEvento)
     {
         var participantes = await _participanteRepository.GetByEventoAsync(idEvento);
@@ -103,7 +109,7 @@ public class ParticipanteService : BaseService, IParticipanteService
         var participante = await _participanteRepository.GetByIdWithDetailsAsync(id);
         return participante == null ? null : _mapper.Map<ParticipanteDto>(participante);
     }
-    
+
     public async Task<ParticipanteDto?> ObterPorUsuarioEventoAsync(int idParticipante, int idEvento)
     {
         var participante = await _participanteRepository.GetByUsuarioEventoWithDetailsAsync(idParticipante, idEvento);
@@ -132,6 +138,8 @@ public class ParticipanteService : BaseService, IParticipanteService
         ExecutarValidacao(new UsuarioValidation(), novoUsuario);
 
         await _usuarioRepository.AddAsync(novoUsuario);
+        await _unitOfWork.SaveChangesAsync();
+        
         return novoUsuario;
     }
 

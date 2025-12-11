@@ -10,4 +10,5 @@ public interface IParticipanteService
     Task<IEnumerable<ParticipanteDto>> ObterPorEventoAsync(int idEvento);
     Task<ParticipanteDto?> ObterPorIdAsync(int id);
     Task<ParticipanteDto?> ObterPorUsuarioEventoAsync(int idParticipante, int idEvento);
+    Task<IEnumerable<ListarConvidadoDto>> ObterConvidadosPorEventoAsync(int idEvento);
 }

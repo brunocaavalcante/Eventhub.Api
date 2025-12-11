@@ -1,6 +1,7 @@
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
+using Eventhub.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eventhub.Api.Controllers;
@@ -40,6 +41,21 @@ public class ParticipantesController : BaseController
         {
             var participantes = await _participanteService.ObterPorEventoAsync(idEvento);
             return CustomResponse(participantes);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpGet("evento/{idEvento}/convidados")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<ListarConvidadoDto>>), 200)]
+    public async Task<IActionResult> ObterConvidadosPorEvento(int idEvento)
+    {
+        try
+        {
+            var convidados = await _participanteService.ObterConvidadosPorEventoAsync(idEvento);
+            return CustomResponse(convidados);
         }
         catch (Exception ex)
         {
@@ -92,6 +108,23 @@ public class ParticipantesController : BaseController
     {
         try
         {
+            var participanteCriado = await _participanteService.AdicionarAsync(participante);
+            return CustomResponse(participanteCriado, 201);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("convidado")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 201)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> CadastrarConvidado([FromBody] CreateParticipanteDto participante)
+    {
+        try
+        {
+            participante.IdPerfil = (int)EnumPerfil.Convidado;
             var participanteCriado = await _participanteService.AdicionarAsync(participante);
             return CustomResponse(participanteCriado, 201);
         }

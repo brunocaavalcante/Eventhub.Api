@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,15 @@ public class ParticipanteRepository : Repository<Participante>, IParticipanteRep
             .Include(p => p.Usuario)
             .Include(p => p.Perfil)
             .FirstOrDefaultAsync(p => p.IdUsuario == idParticipante && p.IdEvento == idEvento);
+    }
+
+    public async Task<IEnumerable<Participante>?> ObterConvidadoAcompanhantesPorEvento(int idEvento)
+    {
+        return await _dbSet
+            .Include(p => p.Usuario).ThenInclude(f => f.Foto)
+            .Include(p => p.EnviosConvite)
+            .Where(p => p.IdEvento == idEvento && p.IdPerfil == (int)EnumPerfil.Convidado)
+            .ToListAsync();
     }
 
     public async Task<bool> ExistsAsync(int idEvento, int idUsuario, int idPerfil, int? ignoreId = null)

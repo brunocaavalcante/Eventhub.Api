@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,8 @@ public class EnvioConviteRepository : Repository<EnvioConvite>, IEnvioConviteRep
     public async Task<IEnumerable<EnvioConvite>> GetConfirmadosByEventoAsync(int idEvento)
     {
         return await _dbSet
-            .Where(e => e.IdEvento == idEvento && e.Status == "Confirmado")
             .Include(e => e.Participante)
+            .Where(e => e.IdEvento == idEvento && e.IdStatusEnvioConvite == (int)EnumStatusEnvioConvite.Confirmado)
             .ToListAsync();
     }
 }

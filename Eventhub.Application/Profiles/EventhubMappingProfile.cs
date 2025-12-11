@@ -24,7 +24,7 @@ public class EventhubMappingProfile : Profile
         CreateMap<Perfil, PermissoesPerfilDto>()
             .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Descricao))
             .ForMember(dest => dest.Permissoes, opt => opt.MapFrom(src => src.PerfilPermissoes.Select(pp => pp.Permissao)));
-            
+
         CreateMap<EnderecoEventoDto, EnderecoEvento>().ReverseMap();
 
         CreateMap<Usuario, UsuarioInfoDto>()
@@ -35,6 +35,16 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Perfil, opt => opt.MapFrom(src => src.Perfil))
             .ForMember(dest => dest.CadastroPendente, opt => opt.MapFrom(src => src.CadastroPendente))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status));
+
+        CreateMap<Participante, ListarConvidadoDto>()
+            .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : ""))
+            .ForMember(dest => dest.Telefone, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Telefone : ""))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Email : ""))
+            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => src.Usuario != null && src.Usuario.Foto != null ? src.Usuario.Foto.Base64 : ""))
+            .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.EnviosConvite
+                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.QtdAcompanhantes).FirstOrDefault()))
+            .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src => src.EnviosConvite
+                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.StatusEnvioConvite != null ? ev.StatusEnvioConvite.Descricao : null).FirstOrDefault() ?? "PendenteEnvio"));
 
         CreateMap<UploadFotoDto, Fotos>().ReverseMap();
         CreateMap<UpdateFotoDto, Fotos>().ReverseMap();
@@ -52,7 +62,7 @@ public class EventhubMappingProfile : Profile
                         .Select(g => g.Foto.Base64)
                         .FirstOrDefault() ?? string.Empty
                     : string.Empty));
-        
+
         CreateMap<Evento, EventoDto>()
             .ForMember(dest => dest.IdTipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Id))
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));

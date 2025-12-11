@@ -29,4 +29,5 @@ public class EventhubDbContext : DbContext
     public DbSet<Domain.Entities.Permissao> Permissoes { get; set; } = null!;
     public DbSet<Domain.Entities.PerfilPermissao> PerfilPermissoes { get; set; } = null!;
     public DbSet<Domain.Entities.UsuarioPermissao> UsuarioPermissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.StatusEnvioConvite> StatusEnvioConvites { get; set; } = null!;
 }

@@ -7,7 +7,7 @@ public class EnvioConvite
     public int IdParticipante { get; set; }
     public int IdEvento { get; set; }
     public DateTime DataEnvio { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public int? IdStatusEnvioConvite { get; set; }
     public string MensagemResposta { get; set; } = string.Empty;
     public int QtdAcompanhantes { get; set; }
 
@@ -15,4 +15,5 @@ public class EnvioConvite
     public Convite Convite { get; set; } = null!;
     public Participante Participante { get; set; } = null!;
     public Evento Evento { get; set; } = null!;
+    public StatusEnvioConvite? StatusEnvioConvite { get; set; }
 }
