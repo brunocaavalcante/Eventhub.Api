@@ -37,6 +37,9 @@ public class ConviteMapping : IEntityTypeConfiguration<Convite>
         
         builder.Property(c => c.DataCriacao)
             .IsRequired();
+        
+        builder.Property(c => c.IdEvento)
+            .IsRequired();
 
         // Relacionamentos
         builder.HasOne(c => c.Foto)
@@ -47,6 +50,11 @@ public class ConviteMapping : IEntityTypeConfiguration<Convite>
         builder.HasMany(c => c.EnviosConvite)
             .WithOne(ec => ec.Convite)
             .HasForeignKey(ec => ec.IdConvite)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasOne(c => c.Evento)
+            .WithOne(e => e.Convite)
+            .HasForeignKey<Convite>(c => c.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

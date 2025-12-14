@@ -23,6 +23,14 @@ public class ConviteService : BaseService, IConviteService
         _mapper = mapper;
     }
 
+    public async Task<ConviteDto?> ObterPorEventoAsync(int idEvento)
+    {
+        var convite = await _conviteRepository.FirstOrDefaultAsync(c => c.IdEvento == idEvento);
+        if (convite == null) return null;
+
+        return _mapper.Map<ConviteDto>(convite);
+    }
+
     public async Task<ConviteDto> CriarAsync(CreateConviteDto dto)
     {
         ExecutarValidacao(new CreateConviteValidation(), dto);

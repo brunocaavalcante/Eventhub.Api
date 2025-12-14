@@ -21,6 +21,25 @@ public class ConviteController : BaseController
         _unitOfWork = unitOfWork;
     }
 
+    [HttpGet("evento/{idEvento}")]
+    [ProducesResponseType(typeof(CustomResponse<ConviteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPorEvento(int idEvento)
+    {
+        try
+        {
+            var convite = await _conviteService.ObterPorEventoAsync(idEvento);
+            if (convite == null)
+                return CustomResponse<object>(404, "Convite não encontrado.");
+
+            return CustomResponse(convite);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(CustomResponse<CreateConviteDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]

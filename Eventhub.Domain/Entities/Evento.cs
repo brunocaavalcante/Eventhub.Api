@@ -19,6 +19,7 @@ public class Evento
     public StatusEvento Status { get; set; } = null!;
     public EnderecoEvento Endereco { get; set; } = null!;
     public Usuario UsuarioCriador { get; set; } = null!;
+    public Convite Convite { get; set; } = null!;
     public ICollection<UsuarioPerfilEvento> UsuarioPerfis { get; set; } = new List<UsuarioPerfilEvento>();
     public ICollection<Galeria> Galerias { get; set; } = new List<Galeria>();
     public ICollection<ProgramacaoEvento> Programacoes { get; set; } = new List<ProgramacaoEvento>();
