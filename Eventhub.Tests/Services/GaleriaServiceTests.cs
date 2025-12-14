@@ -39,8 +39,8 @@ public class GaleriaServiceTests
 
         _galeriaRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Galeria>()))
             .Returns(Task.CompletedTask);
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
-            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
 
         // Act
         var resultado = await _galeriaService.AdicionarAsync(galeria);
@@ -50,7 +50,7 @@ public class GaleriaServiceTests
         resultado.Legenda.Should().Be("Foto do evento");
         resultado.Ordem.Should().Be(1);
         _galeriaRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Galeria>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
@@ -115,8 +115,8 @@ public class GaleriaServiceTests
 
         _galeriaRepositoryMock.Setup(x => x.GetByIdAsync(galeria.Id))
             .ReturnsAsync(galeria);
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
-            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
 
         // Act
         var resultado = await _galeriaService.AtualizarAsync(galeria);
@@ -127,7 +127,7 @@ public class GaleriaServiceTests
         resultado.Visibilidade.Should().Be("Privado");
         _galeriaRepositoryMock.Verify(x => x.GetByIdAsync(galeria.Id), Times.Once);
         _galeriaRepositoryMock.Verify(x => x.Update(It.IsAny<Galeria>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
@@ -148,8 +148,8 @@ public class GaleriaServiceTests
 
         _galeriaRepositoryMock.Setup(x => x.GetByIdAsync(galeriaId))
             .ReturnsAsync(galeria);
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
-            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
 
         // Act
         await _galeriaService.RemoverAsync(galeriaId);
@@ -157,7 +157,7 @@ public class GaleriaServiceTests
         // Assert
         _galeriaRepositoryMock.Verify(x => x.GetByIdAsync(galeriaId), Times.Once);
         _galeriaRepositoryMock.Verify(x => x.Remove(It.IsAny<Galeria>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class GaleriaServiceTests
         _galeriaRepositoryMock.Setup(x => x.ExistsByTipoAsync(galeria.IdEvento, GaleriaTipo.Capa, null))
             .ReturnsAsync(true);
 
-        Func<Task> act = () => _galeriaService.AdicionarAsync(galeria);
+        Func<Task> act = () => _galeriaService.AdicionarAsync(galeria); 
 
         await act.Should().ThrowAsync<ExceptionValidation>()
             .WithMessage("*capa*");

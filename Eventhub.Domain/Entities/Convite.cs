@@ -7,6 +7,9 @@ public class Convite
     public string Nome2 { get; set; } = string.Empty;
     public string Mensagem { get; set; } = string.Empty;
     public string TemaConvite { get; set; } = string.Empty;
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
     public int IdFoto { get; set; }
 
     // Relacionamentos

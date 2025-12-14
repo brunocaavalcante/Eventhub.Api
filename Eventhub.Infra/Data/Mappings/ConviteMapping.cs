@@ -28,6 +28,15 @@ public class ConviteMapping : IEntityTypeConfiguration<Convite>
 
         builder.Property(c => c.IdFoto)
             .IsRequired();
+        
+        builder.Property(c => c.DataInicio)
+            .IsRequired(false);
+        
+        builder.Property(c => c.DataFim)
+            .IsRequired(false);
+        
+        builder.Property(c => c.DataCriacao)
+            .IsRequired();
 
         // Relacionamentos
         builder.HasOne(c => c.Foto)

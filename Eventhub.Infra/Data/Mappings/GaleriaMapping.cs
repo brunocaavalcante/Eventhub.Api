@@ -19,8 +19,7 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
         builder.Property(g => g.IdFoto)
             .IsRequired();
 
-        builder.Property(g => g.Ordem)
-            .IsRequired();
+        builder.Property(g => g.Ordem);
 
         builder.Property(g => g.Visibilidade)
             .IsRequired()

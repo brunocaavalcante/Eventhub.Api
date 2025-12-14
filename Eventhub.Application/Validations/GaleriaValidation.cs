@@ -25,5 +25,11 @@ public class GaleriaValidation : AbstractValidator<Galeria>
 
         RuleFor(g => g.Tipo)
             .IsInEnum().WithMessage("Tipo de foto inválido.");
+
+        When(g => g.Ordem.HasValue, () =>
+        {
+            RuleFor(g => g.Ordem)
+                .GreaterThanOrEqualTo(0).WithMessage("A ordem não pode ser negativa.");
+        });
     }
 }

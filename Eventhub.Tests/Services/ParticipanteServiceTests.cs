@@ -110,6 +110,18 @@ namespace Eventhub.Tests.Services
         }
 
         [Fact]
+        public async Task ObterConvidadosPorEventoAsync_DeveRetornarConvidados()
+        {
+            var participantes = new List<Participante> { new Participante { Id = 1, IdEvento = 1, IdPerfil = 9, IdUsuario = 10 } };
+            var participantesDto = new List<ListarConvidadoDto> { new ListarConvidadoDto {  Email = "convidado@email.com" } };
+            _participanteRepoMock.Setup(r => r.ObterConvidadoAcompanhantesPorEvento(1)).ReturnsAsync(participantes);
+            _mapperMock.Setup(m => m.Map<IEnumerable<ListarConvidadoDto>>(participantes)).Returns(participantesDto);
+
+            var result = await _service.ObterConvidadosPorEventoAsync(1);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task ObterPorIdAsync_DeveRetornarParticipanteDto()
         {
             var participante = new Participante { Id = 1, IdEvento = 1, IdPerfil = 2, IdUsuario = 10 };

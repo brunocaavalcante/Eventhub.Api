@@ -4,6 +4,7 @@ using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eventhub.Infra.Migrations
 {
     [DbContext(typeof(EventhubDbContext))]
-    partial class EventhubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251212020729_AddColumnNomeLocal")]
+    partial class AddColumnNomeLocal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,15 +145,6 @@ namespace Eventhub.Infra.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DataFim")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DataInicio")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("IdFoto")
                         .HasColumnType("int");

@@ -76,5 +76,39 @@ namespace Eventhub.Tests.Controllers
             var response = Assert.IsType<CustomResponse<ParticipanteDto>>(okResult.Value);
             Assert.Equal(1, response.Data.Id);
         }
+
+        [Fact]
+        public async Task ObterConvidadosPorEvento_DeveTratarExcecao()
+        {
+            _serviceMock.Setup(s => s.ObterConvidadosPorEventoAsync(1)).ThrowsAsync(new Exception("Erro"));
+
+            var result = await _controller.ObterConvidadosPorEvento(1);
+            var errorResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, errorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task CadastrarConvidado_DeveRetornarParticipanteCriado()
+        {
+            var dto = new CreateParticipanteDto { IdEvento = 1, Nome = "Convidado", Email = "convidado@email.com" };
+            var participante = new ParticipanteDto { Id = 1, IdEvento = 1, Perfil = new PerfilDto { Id = (int)Eventhub.Domain.Enums.EnumPerfil.Convidado } };
+            _serviceMock.Setup(s => s.AdicionarAsync(It.Is<CreateParticipanteDto>(p => p.IdPerfil == (int)Eventhub.Domain.Enums.EnumPerfil.Convidado))).ReturnsAsync(participante);
+
+            var result = await _controller.CadastrarConvidado(dto);
+            var createdResult = Assert.IsType<ObjectResult>(result);
+            var response = Assert.IsType<CustomResponse<ParticipanteDto>>(createdResult.Value);
+            Assert.Equal((int)Eventhub.Domain.Enums.EnumPerfil.Convidado, response.Data.Perfil.Id);
+        }
+
+        [Fact]
+        public async Task CadastrarConvidado_DeveTratarExcecao()
+        {
+            var dto = new CreateParticipanteDto { IdEvento = 1, Nome = "Convidado", Email = "convidado@email.com" };
+            _serviceMock.Setup(s => s.AdicionarAsync(It.IsAny<CreateParticipanteDto>())).ThrowsAsync(new Exception("Erro"));
+
+            var result = await _controller.CadastrarConvidado(dto);
+            var errorResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, errorResult.StatusCode);
+        }
     }
 }

@@ -68,5 +68,8 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();
+        
+        CreateMap<Convite, CreateConviteDto>();
+        CreateMap<Convite, ConviteDto>();
     }
 }

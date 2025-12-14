@@ -53,7 +53,6 @@ public class EventoService : BaseService, IEventoService
 
     public async Task<EventoCadastroDto> AdicionarAsync(EventoCadastroDto eventoDto)
     {
-        await _unitOfWork.BeginTransactionAsync();
         var evento = _mapper.Map<Evento>(eventoDto);
 
         ExecutarValidacao(new EventoValidation(), evento);
@@ -87,8 +86,6 @@ public class EventoService : BaseService, IEventoService
             participanteDto.IdEvento = evento.Id;
             await _participanteService.AdicionarAsync(participanteDto);
         }
-
-        await _unitOfWork.CommitTransactionAsync();
 
         return eventoDto;
     }

@@ -33,7 +33,6 @@ public abstract class BaseController : ControllerBase
             return CustomResponse<object>(400, validationEx.Message);
         }
 
-        // Log da exceção aqui
-        return CustomResponse<object>(500, "Ocorreu um erro interno no servidor.");
+        return CustomResponse<object>(500, ex.Message);
     }
 }

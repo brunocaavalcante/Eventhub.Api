@@ -10,6 +10,17 @@ public class ConviteDto
     public int IdFoto { get; set; }
 }
 
+public class CreateConviteDto
+{
+    public string Nome { get; set; } = string.Empty;
+    public string? Nome2 { get; set; }
+    public string Mensagem { get; set; } = string.Empty;
+    public string TemaConvite { get; set; } = string.Empty;
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
+    public UploadFotoDto Foto { get; set; }
+}
+
 public class EnvioConviteDto
 {
     public int Id { get; set; }

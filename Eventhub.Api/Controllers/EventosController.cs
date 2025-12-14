@@ -13,11 +13,13 @@ public class EventosController : BaseController
 {
     private readonly IEventoService _eventoService;
     private readonly IEventoRepository _eventoRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EventosController(IEventoService eventoService, IEventoRepository eventoRepository)
+    public EventosController(IEventoService eventoService, IEventoRepository eventoRepository, IUnitOfWork unitOfWork)
     {
         _eventoService = eventoService;
         _eventoRepository = eventoRepository;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpGet("{id}")]
@@ -121,11 +123,15 @@ public class EventosController : BaseController
     {
         try
         {
+            await _unitOfWork.BeginTransactionAsync();
             var eventoCreated = await _eventoService.AdicionarAsync(evento);
+            await _unitOfWork.CommitTransactionAsync();
+            
             return CustomResponse(eventoCreated, 201);
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }
