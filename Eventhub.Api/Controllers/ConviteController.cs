@@ -41,7 +41,7 @@ public class ConviteController : BaseController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(CustomResponse<CreateConviteDto>), 201)]
+    [ProducesResponseType(typeof(CustomResponse<ConviteDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     public async Task<IActionResult> Criar([FromBody] CreateConviteDto dto)
     {
@@ -54,6 +54,28 @@ public class ConviteController : BaseController
             await _unitOfWork.CommitTransactionAsync();
 
             return CustomResponse(convite, 201);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(CustomResponse<ConviteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> Atualizar(int id, [FromBody] UpdateConviteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+
+            var convite = await _conviteService.AtualizarAsync(id, dto);
+
+            await _unitOfWork.CommitTransactionAsync();
+
+            return CustomResponse(convite);
         }
         catch (Exception ex)
         {

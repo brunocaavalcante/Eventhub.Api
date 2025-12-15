@@ -69,7 +69,7 @@ public class EventhubMappingProfile : Profile
 
         CreateMap<StatusEvento, StatusEventoDto>();
         
-        CreateMap<Convite, CreateConviteDto>();
+        CreateMap<Convite, CreateConviteDto>().ReverseMap();
         CreateMap<Convite, ConviteDto>();
     }
 }

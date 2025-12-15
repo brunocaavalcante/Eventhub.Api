@@ -8,11 +8,12 @@ public class ConviteDto
     public string? Nome2 { get; set; }
     public string Mensagem { get; set; } = string.Empty;
     public string TemaConvite { get; set; } = string.Empty;
-    public int IdFoto { get; set; }
+    public FotoDto? Foto { get; set; }
 }
 
 public class CreateConviteDto
 {
+    public int IdEvento { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string? Nome2 { get; set; }
     public string Mensagem { get; set; } = string.Empty;
@@ -20,6 +21,18 @@ public class CreateConviteDto
     public DateTime? DataInicio { get; set; }
     public DateTime? DataFim { get; set; }
     public UploadFotoDto Foto { get; set; }
+}
+
+public class UpdateConviteDto
+{
+    public int Id { get; set; }
+    public string Nome { get; set; } = string.Empty;
+    public string? Nome2 { get; set; }
+    public string Mensagem { get; set; } = string.Empty;
+    public string TemaConvite { get; set; } = string.Empty;
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
+    public UpdateFotoDto? Foto { get; set; }
 }
 
 public class EnvioConviteDto

@@ -5,12 +5,12 @@ using Eventhub.Domain.Interfaces;
 using Eventhub.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using FluentAssertions;
+using Eventhub.Api.Models;
 
 namespace Eventhub.Tests.Controllers;
 
 public class ConviteControllerTests
 {
-    //testes de unidade para ConviteController seguindo o mesmo padrão dos demais testes de controller
     private readonly Mock<IConviteService> _conviteServiceMock;
     private readonly Mock<IEnvioConviteService> _envioConviteServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
@@ -33,7 +33,7 @@ public class ConviteControllerTests
         var result = await _controller.ObterPorEvento(1);
         var customResult = result as ObjectResult;
         Assert.NotNull(customResult);
-        var response = customResult.Value as Eventhub.Api.Models.CustomResponse<ConviteDto>;
+        var response = customResult.Value as CustomResponse<ConviteDto>;
         Assert.NotNull(response);
         Assert.NotNull(response.Data);
         response.Data.Id.Should().Be(1);
@@ -48,7 +48,7 @@ public class ConviteControllerTests
         var customResult = result as ObjectResult;
         Assert.NotNull(customResult);
         customResult.StatusCode.Should().Be(404);
-        var response = customResult.Value as Eventhub.Api.Models.CustomResponse<object>;
+        var response = customResult.Value as CustomResponse<object>;
         Assert.NotNull(response);
         response.Erros.Should().Contain("Convite não encontrado.");
     }
@@ -64,7 +64,7 @@ public class ConviteControllerTests
         var customResult = result as ObjectResult;
         Assert.NotNull(customResult);
         customResult.StatusCode.Should().Be(201);
-        var response = customResult.Value as Eventhub.Api.Models.CustomResponse<ConviteDto>;
+        var response = customResult.Value as CustomResponse<ConviteDto>;
         Assert.NotNull(response);
         Assert.NotNull(response.Data);
         response.Data.Id.Should().Be(1);
@@ -79,11 +79,42 @@ public class ConviteControllerTests
         var result = await _controller.Criar(createDto);
         var customResult = result as ObjectResult;
         Assert.NotNull(customResult);
-        var response = customResult.Value as Eventhub.Api.Models.CustomResponse<object>;
+        var response = customResult.Value as CustomResponse<object>;
         Assert.NotNull(response);
         response.Erros.Should().Contain("Erro ao criar convite");
 
         _unitOfWorkMock.Verify(u => u.RollbackTransactionAsync(), Times.Once);
-    }    
+    } 
 
+    [Fact]
+    public async Task Atualizar_ShouldReturnUpdatedConviteDto()
+    {
+        var updateDto = new UpdateConviteDto { Nome = "Convite Atualizado", Nome2 = "Convite 2", Mensagem = "Mensagem Atualizada", Foto = new UpdateFotoDto { Id = 1, NomeArquivo = "img_atualizada.jpg", Base64 = Convert.ToBase64String(new byte[2048]) } };
+        var conviteDto = new ConviteDto { Id = 1 };
+        _conviteServiceMock.Setup(s => s.AtualizarAsync(1, updateDto)).ReturnsAsync(conviteDto);
+
+        var result = await _controller.Atualizar(1, updateDto);
+        var customResult = result as ObjectResult;
+        Assert.NotNull(customResult);
+        var response = customResult.Value as CustomResponse<ConviteDto>;
+        Assert.NotNull(response);
+        Assert.NotNull(response.Data);
+        response.Data.Id.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Atualizar_ShouldHandleExceptionAndRollback()
+    {
+        var updateDto = new UpdateConviteDto { Nome = "Convite Atualizado", Nome2 = "Convite 2", Mensagem = "Mensagem Atualizada", Foto = new UpdateFotoDto { Id = 1, NomeArquivo = "img_atualizada.jpg", Base64 = Convert.ToBase64String(new byte[2048]) } };
+        _conviteServiceMock.Setup(s => s.AtualizarAsync(1, updateDto)).ThrowsAsync(new Exception("Erro ao atualizar convite"));
+
+        var result = await _controller.Atualizar(1, updateDto);
+        var customResult = result as ObjectResult;
+        Assert.NotNull(customResult);
+        var response = customResult.Value as CustomResponse<object>;
+        Assert.NotNull(response);
+        response.Erros.Should().Contain("Erro ao atualizar convite");
+
+        _unitOfWorkMock.Verify(u => u.RollbackTransactionAsync(), Times.Once);
+    } 
 }

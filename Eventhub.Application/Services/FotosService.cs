@@ -38,6 +38,7 @@ public class FotosService : BaseService, IFotosService
     public async Task<FotoDto> UpdateAsync(UpdateFotoDto dto)
     {
         ExecutarValidacao(new UpdateFotoValidator(), dto);
+        
         var foto = await _fotosRepository.GetByIdAsync(dto.Id);
         if (foto == null)
             throw new ExceptionValidation("Foto não encontrada.");
