@@ -1,0 +1,77 @@
+using AutoMapper;
+using Eventhub.Application.DTOs;
+using Eventhub.Application.Interfaces;
+using Eventhub.Application.Validations;
+using Eventhub.Domain.Entities;
+using Eventhub.Domain.Exceptions;
+using Eventhub.Domain.Interfaces;
+
+namespace Eventhub.Application.Services;
+
+public class ConviteService : BaseService, IConviteService
+{
+    private readonly IConviteRepository _conviteRepository;
+    private readonly IFotosService _fotosService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+
+    public ConviteService(IConviteRepository conviteRepository,
+    IFotosService fotosService, IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _conviteRepository = conviteRepository;
+        _fotosService = fotosService;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<ConviteDto?> ObterPorEventoAsync(int idEvento)
+    {
+        var convite = await _conviteRepository.FirstOrDefaultAsync(c => c.IdEvento == idEvento);
+        if (convite == null) return null;
+
+        var conviteDto = _mapper.Map<ConviteDto>(convite);
+        
+        conviteDto.Foto = await _fotosService.GetByIdAsync(convite.IdFoto);
+
+        return conviteDto;
+    }
+
+    public async Task<ConviteDto> CriarAsync(CreateConviteDto dto)
+    {
+        ExecutarValidacao(new CreateConviteValidation(), dto);
+
+        var foto = await _fotosService.UploadAsync(dto.Foto);
+
+        var convite = _mapper.Map<Convite>(dto);
+        convite.IdFoto = foto.Id;
+
+        await _conviteRepository.AddAsync(convite);
+        await _unitOfWork.SaveChangesAsync();
+
+        return _mapper.Map<ConviteDto>(convite);
+    }
+
+    public async Task<ConviteDto> AtualizarAsync(int id, UpdateConviteDto dto)
+    {
+        ExecutarValidacao(new UpdateConviteValidation(), dto);
+
+        var convite = await _conviteRepository.GetByIdAsync(id);
+        if (convite == null)
+            throw new ExceptionValidation("Convite não encontrado.");
+
+        if (dto.Foto != null)
+            await _fotosService.UpdateAsync(dto.Foto);
+
+        convite.Nome = dto.Nome;
+        convite.Nome2 = dto.Nome2;
+        convite.Mensagem = dto.Mensagem;
+        convite.TemaConvite = dto.TemaConvite;
+        convite.DataInicio = dto.DataInicio;
+        convite.DataFim = dto.DataFim;
+
+        _conviteRepository.Update(convite);
+        await _unitOfWork.SaveChangesAsync();
+
+        return _mapper.Map<ConviteDto>(convite);
+    }
+}

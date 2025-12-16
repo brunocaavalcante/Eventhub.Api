@@ -1,0 +1,99 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+services:
+  eventhubapi:
+    image: eventhubapi
+    build:
+      context: .
+      dockerfile: Eventhub.Api/Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5189:5189
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Keycloak__Authority=http://keycloak:8080/realms/eventhub
+      - Keycloak__Audience=eventhub-api
+      - Keycloak__RequireHttpsMetadata=false
+    depends_on:
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - eventhub_network
+
+  db:
+    image: mysql:8.0
+    container_name: eventhub_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123@Mudar
+      MYSQL_DATABASE: eventhub_db
+      MYSQL_USER: eventhub_user
+      MYSQL_PASSWORD: 123@Mudar
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql_data:/var/lib/mysql
+    networks:
+      - eventhub_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  postgres:
+    image: postgres:16-alpine
+    container_name: eventhub-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventhub_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: eventhub-keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY: edge
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eventhub_network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  eventhub_network:
+    driver: bridge
+
