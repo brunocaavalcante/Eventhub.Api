@@ -61,7 +61,7 @@ public class PerfisController : BaseController
                     modulos.Add(permissao.Modulo);
             }
 
-            return CustomResponse(modulos);
+            return CustomResponse(modulos.OrderBy(m => m.Ordem));
         }
         catch (Exception ex)
         {

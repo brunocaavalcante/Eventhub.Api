@@ -18,4 +18,8 @@
     <ProjectReference Include="..\Eventhub.Domain\Eventhub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Presente\" />
+  </ItemGroup>
+
 </Project>

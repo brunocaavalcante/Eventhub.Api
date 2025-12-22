@@ -4,6 +4,7 @@ using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eventhub.Infra.Migrations
 {
     [DbContext(typeof(EventhubDbContext))]
-    partial class EventhubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221152931_AddCategoriaPresente")]
+    partial class AddCategoriaPresente
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -423,9 +426,6 @@ namespace Eventhub.Infra.Migrations
                     b.Property<int>("IdFoto")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdPresente")
-                        .HasColumnType("int");
-
                     b.Property<string>("Legenda")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -451,8 +451,6 @@ namespace Eventhub.Infra.Migrations
                     b.HasIndex("IdEvento");
 
                     b.HasIndex("IdFoto");
-
-                    b.HasIndex("IdPresente");
 
                     b.ToTable("Galeria", (string)null);
                 });
@@ -748,6 +746,9 @@ namespace Eventhub.Infra.Migrations
                     b.Property<int>("IdEvento")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdFoto")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdStatus")
                         .HasColumnType("int");
 
@@ -769,6 +770,8 @@ namespace Eventhub.Infra.Migrations
                     b.HasIndex("IdCategoria");
 
                     b.HasIndex("IdEvento");
+
+                    b.HasIndex("IdFoto");
 
                     b.HasIndex("IdStatus");
 
@@ -1259,16 +1262,9 @@ namespace Eventhub.Infra.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Eventhub.Domain.Entities.Presente", "Presente")
-                        .WithMany("Galerias")
-                        .HasForeignKey("IdPresente")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Evento");
 
                     b.Navigation("Foto");
-
-                    b.Navigation("Presente");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Notificacao", b =>
@@ -1381,6 +1377,12 @@ namespace Eventhub.Infra.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Eventhub.Domain.Entities.Fotos", "Foto")
+                        .WithMany()
+                        .HasForeignKey("IdFoto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Eventhub.Domain.Entities.StatusPresente", "Status")
                         .WithMany("Presentes")
                         .HasForeignKey("IdStatus")
@@ -1390,6 +1392,8 @@ namespace Eventhub.Infra.Migrations
                     b.Navigation("Categoria");
 
                     b.Navigation("Evento");
+
+                    b.Navigation("Foto");
 
                     b.Navigation("Status");
                 });
@@ -1590,8 +1594,6 @@ namespace Eventhub.Infra.Migrations
             modelBuilder.Entity("Eventhub.Domain.Entities.Presente", b =>
                 {
                     b.Navigation("Contribuicoes");
-
-                    b.Navigation("Galerias");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.ProgramacaoEvento", b =>

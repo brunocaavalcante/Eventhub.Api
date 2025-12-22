@@ -6,6 +6,7 @@ public class Galeria
 {
     public int Id { get; set; }
     public int IdEvento { get; set; }
+    public int? IdPresente { get; set; }
     public int IdFoto { get; set; }
     public int? Ordem { get; set; }
     public string Visibilidade { get; set; } = string.Empty;
@@ -16,4 +17,5 @@ public class Galeria
     // Relacionamentos
     public Evento Evento { get; set; } = null!;
     public Fotos Foto { get; set; } = null!;
+    public Presente? Presente { get; set; }
 }

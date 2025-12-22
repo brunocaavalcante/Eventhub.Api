@@ -16,6 +16,9 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
         builder.Property(g => g.IdEvento)
             .IsRequired();
 
+        builder.Property(g => g.IdPresente)
+           .IsRequired(false);
+
         builder.Property(g => g.IdFoto)
             .IsRequired();
 
@@ -46,6 +49,11 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
         builder.HasOne(g => g.Foto)
             .WithMany(f => f.Galerias)
             .HasForeignKey(g => g.IdFoto)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(g => g.Presente)
+            .WithMany(p => p.Galerias)
+            .HasForeignKey(g => g.IdPresente)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
