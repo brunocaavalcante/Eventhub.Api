@@ -36,9 +36,8 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(c => c.Status)
-            .IsRequired()
-            .HasMaxLength(50);
+        builder.Property(c => c.IdStatusContribuicao)
+            .IsRequired();
 
         builder.Property(c => c.DataCadastro)
             .IsRequired();
@@ -52,6 +51,11 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
         builder.HasOne(c => c.Participante)
             .WithMany(participante => participante.Contribuicoes)
             .HasForeignKey(c => c.IdParticipante)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        builder.HasOne(c => c.StatusContribuicao)
+            .WithMany(status => status.Contribuicoes)
+            .HasForeignKey(c => c.IdStatusContribuicao)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

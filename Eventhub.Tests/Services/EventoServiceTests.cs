@@ -84,8 +84,8 @@ public class EventoServiceTests
 
         _eventoRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
-            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
 
         // Act
         var resultado = await _eventoService.AdicionarAsync(evento);
@@ -94,7 +94,7 @@ public class EventoServiceTests
         resultado.Should().NotBeNull();
         resultado.Descricao.Should().Be("Descrição do evento");
         _eventoRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Evento>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]

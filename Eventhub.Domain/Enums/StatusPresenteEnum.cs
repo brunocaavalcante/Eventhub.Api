@@ -2,8 +2,8 @@ namespace Eventhub.Domain.Enums;
 
 public enum StatusPresenteEnum
 {
-    Pendente = 1,
-    Concluido = 2,
-    Cancelado = 3,
-    
+    Disponivel = 1,
+    Reservado = 2,
+    Indisponivel = 3,
+    Finalizado = 4    
 }

@@ -32,7 +32,7 @@ public class PresenteService : BaseService, IPresenteService
     {
         var presente = _mapper.Map<Presente>(dto);
         presente.DataCadastro = DateTime.UtcNow;
-        presente.IdStatus = (int)StatusPresenteEnum.Pendente;
+        presente.IdStatus = (int)StatusPresenteEnum.Disponivel;
 
         ExecutarValidacao(new PresenteValidation(), presente);
         await _presenteRepository.AddAsync(presente);
@@ -100,5 +100,11 @@ public class PresenteService : BaseService, IPresenteService
     {
         var presentes = await _presenteRepository.GetAllAsync();
         return _mapper.Map<IEnumerable<PresenteDto>>(presentes);
+    }
+
+    public async Task<IEnumerable<CategoriaPresenteDto>> ListarCategoriaPresentesAsync()
+    {
+        var categorias = await _presenteRepository.GetByCategoryAsync();
+        return _mapper.Map<IEnumerable<CategoriaPresenteDto>>(categorias);
     }
 }

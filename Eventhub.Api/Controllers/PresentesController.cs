@@ -34,6 +34,21 @@ public class PresentesController : BaseController
         }
     }
 
+    [HttpGet("categorias")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<CategoriaPresenteDto>>), 200)]
+    public async Task<IActionResult> ListarCategoriaPresentes()
+    {
+        try
+        {
+            var categorias = await _presenteService.ListarCategoriaPresentesAsync();
+            return CustomResponse(categorias);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(CustomResponse<PresenteDto>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]

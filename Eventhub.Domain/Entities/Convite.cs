@@ -4,6 +4,7 @@ public class Convite
 {
     public int Id { get; set; }
     public int IdEvento { get; set; }
+    public int Opacity { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Nome2 { get; set; } = string.Empty;
     public string Mensagem { get; set; } = string.Empty;

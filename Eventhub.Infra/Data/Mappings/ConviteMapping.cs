@@ -28,6 +28,9 @@ public class ConviteMapping : IEntityTypeConfiguration<Convite>
 
         builder.Property(c => c.IdFoto)
             .IsRequired();
+            
+        builder.Property(c => c.Opacity)
+            .IsRequired();
         
         builder.Property(c => c.DataInicio)
             .IsRequired(false);

@@ -9,4 +9,5 @@ public interface IPresenteService
     Task RemoverAsync(int id);
     Task<PresenteDto?> ObterPorIdAsync(int id);
     Task<IEnumerable<PresenteDto>> ListarTodosAsync();
+    Task<IEnumerable<CategoriaPresenteDto>> ListarCategoriaPresentesAsync();
 }
