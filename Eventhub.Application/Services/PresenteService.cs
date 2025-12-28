@@ -82,9 +82,20 @@ public class PresenteService : BaseService, IPresenteService
 
     public async Task RemoverAsync(int id)
     {
-        var presente = await _presenteRepository.GetByIdAsync(id);
+        var presente = await _presenteRepository.GetByIdAsync(id, p => p.Galerias);
+
         if (presente == null)
             throw new ExceptionValidation("Presente não encontrado.");
+
+        if (presente.IdStatus != (int)StatusPresenteEnum.Disponivel)
+            throw new ExceptionValidation("Somente presentes com status 'Disponível' podem ser removidos.", true);
+
+        var galerias = presente.Galerias.ToList();
+
+        foreach (var galeria in galerias)
+        {
+            await _fotosService.RemoverAsync(galeria.IdFoto);
+        }
 
         _presenteRepository.Remove(presente);
         await _unitOfWork.SaveChangesAsync();

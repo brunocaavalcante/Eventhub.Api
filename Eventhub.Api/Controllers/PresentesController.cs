@@ -19,13 +19,13 @@ public class PresentesController : BaseController
         _unitOfWork = unitOfWork;
     }
 
-    [HttpGet]
+    [HttpGet("evento/{idEvento}")]
     [ProducesResponseType(typeof(CustomResponse<IEnumerable<PresenteDto>>), 200)]
-    public async Task<IActionResult> ListarTodos()
+    public async Task<IActionResult> ListarTodos(int idEvento)
     {
         try
         {
-            var presentes = await _presenteService.ListarTodosAsync();
+            var presentes = await _presenteService.ListarTodosAsync(idEvento);
             return CustomResponse(presentes);
         }
         catch (Exception ex)
@@ -119,11 +119,14 @@ public class PresentesController : BaseController
     {
         try
         {
+            await _unitOfWork.BeginTransactionAsync();
             await _presenteService.RemoverAsync(id);
+            await _unitOfWork.CommitTransactionAsync();
             return CustomResponse<object>(null, 200);
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }
