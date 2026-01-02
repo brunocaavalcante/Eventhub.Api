@@ -20,4 +20,9 @@ public class UsuarioRepository : Repository<Usuario>, IUsuarioRepository
     {
         return await _dbSet.AnyAsync(u => u.Email == email);
     }
+
+    public async Task<Usuario?> GetByKeycloakIdAsync(string keycloakId)
+    {
+        return await _dbSet.FirstOrDefaultAsync(u => u.KeycloakId == keycloakId);
+    }
 }

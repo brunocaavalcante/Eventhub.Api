@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +31,9 @@ public class GaleriaRepositoryTests
         );
 
         context.Galerias.AddRange(
-            new Galeria { Id = 1, IdEvento = eventoId, IdFoto = 1, Ordem = 2, Visibilidade = "Público", Legenda = "Foto 2", Data = DateTime.Now },
-            new Galeria { Id = 2, IdEvento = eventoId, IdFoto = 2, Ordem = 1, Visibilidade = "Público", Legenda = "Foto 1", Data = DateTime.Now },
-            new Galeria { Id = 3, IdEvento = 2, IdFoto = 3, Ordem = 1, Visibilidade = "Privado", Legenda = "Outra", Data = DateTime.Now }
+            new Galeria { Id = 1, IdEvento = eventoId, IdFoto = 1, Ordem = 2, Visibilidade = "Público", Legenda = "Foto 2", Data = DateTime.Now, Tipo = GaleriaTipo.Galeria },
+            new Galeria { Id = 2, IdEvento = eventoId, IdFoto = 2, Ordem = 1, Visibilidade = "Público", Legenda = "Foto 1", Data = DateTime.Now, Tipo = GaleriaTipo.Capa },
+            new Galeria { Id = 3, IdEvento = 2, IdFoto = 3, Ordem = 1, Visibilidade = "Privado", Legenda = "Outra", Data = DateTime.Now, Tipo = GaleriaTipo.Galeria }
         );
         await context.SaveChangesAsync();
         var repo = new GaleriaRepository(context);
@@ -45,5 +46,28 @@ public class GaleriaRepositoryTests
         galerias[0].Ordem.Should().Be(1);
         galerias[1].Ordem.Should().Be(2);
         galerias.Should().OnlyContain(g => g.IdEvento == eventoId);
+    }
+
+    [Fact]
+    public async Task ExistsByTipoAsync_DeveRetornarVerdadeiro_QuandoCapaJaExiste()
+    {
+        using var context = CreateInMemoryContext();
+        var eventoId = 10;
+        context.Galerias.Add(new Galeria
+        {
+            Id = 1,
+            IdEvento = eventoId,
+            IdFoto = 5,
+            Ordem = 1,
+            Visibilidade = "Público",
+            Data = DateTime.Now,
+            Tipo = GaleriaTipo.Capa
+        });
+        await context.SaveChangesAsync();
+        var repo = new GaleriaRepository(context);
+
+        var existeCapa = await repo.ExistsByTipoAsync(eventoId, GaleriaTipo.Capa);
+
+        existeCapa.Should().BeTrue();
     }
 }

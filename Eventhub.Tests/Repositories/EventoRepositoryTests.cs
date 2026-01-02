@@ -39,7 +39,7 @@ public class EventoRepositoryTests
         var repo = new EventoRepository(context);
 
         // Act
-        var eventos = (await repo.GetByUsuarioAsync(idUsuario)).ToList();
+        var eventos = (await repo.GetEventosByUsuarioAsync(idUsuario)).ToList();
 
         // Assert
         eventos.Should().HaveCount(2);
@@ -127,7 +127,7 @@ public class EventoRepositoryTests
     }
 
     [Fact]
-    public async Task GetEventosAtivosByUsuarioAsync_DeveRetornarApenasEventosFuturos_OrdenadosPorDataInicio()
+    public async Task GetEventosAtivosByUsuarioAsync_DeveRetornarEventos_OrdenadosPorDataInicio()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -149,11 +149,11 @@ public class EventoRepositoryTests
         var repo = new EventoRepository(context);
 
         // Act
-        var eventos = (await repo.GetEventosAtivosByUsuarioAsync(idUsuario)).ToList();
+        var eventos = (await repo.GetEventosByUsuarioAsync(idUsuario)).ToList();
 
         // Assert
-        eventos.Should().HaveCount(2);
-        eventos.Should().OnlyContain(e => e.IdUsuarioCriador == idUsuario && e.DataFim >= hoje);
+        eventos.Should().HaveCount(3);
+        eventos.Should().OnlyContain(e => e.IdUsuarioCriador == idUsuario);
         eventos[0].DataInicio.Should().BeBefore(eventos[1].DataInicio);
         eventos.Should().AllSatisfy(e =>
         {
@@ -161,5 +161,36 @@ public class EventoRepositoryTests
             e.Status.Should().NotBeNull();
             e.Endereco.Should().NotBeNull();
         });
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_DeveRetornarEventoComRelacionamentos()
+    {
+        // Arrange
+        using var context = CreateInMemoryContext();
+        var eventoId = 1;
+
+        context.TipoEvento.Add(new TipoEvento { Id = 1, Descricao = "Reunião", IdFoto = 1 });
+        context.StatusEvento.Add(new StatusEvento { Id = 1, Descricao = "Ativo" });
+        context.EnderecoEvento.Add(new EnderecoEvento { Id = 1, Logradouro = "Rua E", Numero = "654", Cep = "12345-678", Cidade = "Salvador", PontoReferencia = "Centro" });
+        context.Usuarios.Add(new Usuario { Id = 1, Nome = "Carlos Lima", Email = "carlos.lima@email.com", DataCadastro = DateTime.Now, Status = "Ativo" });
+        await context.SaveChangesAsync();
+
+        context.Eventos.Add(new Evento { Id = eventoId, IdUsuarioCriador = 1, IdTipoEvento = 1, IdStatus = 1, IdEndereco = 1, Descricao = "Reunião de Trabalho", DataInicio = DateTime.Now.AddDays(1), DataFim = DateTime.Now.AddDays(2), DataInclusao = DateTime.Now, MaxConvidado = 20 });
+        await context.SaveChangesAsync();
+
+        var repo = new EventoRepository(context);
+
+        // Act
+        var evento = await repo.GetByIdAsync(eventoId);
+
+        // Assert
+        evento.Should().NotBeNull();
+        evento.TipoEvento.Should().NotBeNull();
+        evento.Status.Should().NotBeNull();
+        evento.Endereco.Should().NotBeNull();
+
+        evento.Id.Should().Be(eventoId);
+        evento.Descricao.Should().Be("Reunião de Trabalho");
     }
 }

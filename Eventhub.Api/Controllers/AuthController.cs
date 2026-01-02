@@ -35,7 +35,7 @@ public class AuthController : BaseController
     }
 
     [HttpPost("logout")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(CustomResponse<object>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDto request)
@@ -55,7 +55,6 @@ public class AuthController : BaseController
     }
 
     [HttpPost("refresh")]
-    [AllowAnonymous]
     [ProducesResponseType(typeof(CustomResponse<LoginResponseDto>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)

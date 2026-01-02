@@ -12,7 +12,7 @@ public class AcompanhantesMapping : IEntityTypeConfiguration<Acompanhantes>
 
         builder.HasKey(a => a.Id);
 
-        builder.Property(a => a.IdConvite)
+        builder.Property(a => a.IdParticipante)
             .IsRequired();
 
         builder.Property(a => a.Nome)
@@ -20,9 +20,9 @@ public class AcompanhantesMapping : IEntityTypeConfiguration<Acompanhantes>
             .HasMaxLength(200);
 
         // Relacionamentos
-        builder.HasOne(a => a.Convidado)
-            .WithMany(c => c.Acompanhantes)
-            .HasForeignKey(a => a.IdConvite)
+        builder.HasOne(a => a.Participante)
+            .WithMany(p => p.Acompanhantes)
+            .HasForeignKey(a => a.IdParticipante)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

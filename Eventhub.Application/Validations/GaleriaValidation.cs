@@ -13,9 +13,6 @@ public class GaleriaValidation : AbstractValidator<Galeria>
         RuleFor(g => g.IdFoto)
             .GreaterThan(0).WithMessage("A foto é obrigatória.");
 
-        RuleFor(g => g.Ordem)
-            .GreaterThanOrEqualTo(0).WithMessage("A ordem deve ser maior ou igual a 0.");
-
         RuleFor(g => g.Visibilidade)
             .NotEmpty().WithMessage("A visibilidade é obrigatória.")
             .MaximumLength(50).WithMessage("A visibilidade deve ter até 50 caracteres.");
@@ -25,5 +22,14 @@ public class GaleriaValidation : AbstractValidator<Galeria>
 
         RuleFor(g => g.Data)
             .NotEmpty().WithMessage("A data é obrigatória.");
+
+        RuleFor(g => g.Tipo)
+            .IsInEnum().WithMessage("Tipo de foto inválido.");
+
+        When(g => g.Ordem.HasValue, () =>
+        {
+            RuleFor(g => g.Ordem)
+                .GreaterThanOrEqualTo(0).WithMessage("A ordem não pode ser negativa.");
+        });
     }
 }

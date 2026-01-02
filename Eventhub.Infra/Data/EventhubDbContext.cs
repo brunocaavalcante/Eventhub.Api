@@ -12,7 +12,7 @@ public class EventhubDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public DbSet<Domain.Entities.Convidados> Convidados { get; set; } = null!;
+    public DbSet<Domain.Entities.Participante> Participantes { get; set; } = null!;
     public DbSet<Domain.Entities.Galeria> Galerias { get; set; } = null!;
     public DbSet<Domain.Entities.Usuario> Usuarios { get; set; } = null!;
     public DbSet<Domain.Entities.Fotos> Fotos { get; set; } = null!;
@@ -24,4 +24,12 @@ public class EventhubDbContext : DbContext
     public DbSet<Domain.Entities.ProgramacaoEvento> ProgramacaoEvento { get; set; } = null!;
     public DbSet<Domain.Entities.ResponsavelProgramacao> ResponsavelProgramacao { get; set; } = null!;
     public DbSet<Domain.Entities.StatusProgramacao> StatusProgramacao { get; set; } = null!;
+    public DbSet<Domain.Entities.Perfil> Perfis { get; set; } = null!;
+    public DbSet<Domain.Entities.Modulo> Modulos { get; set; } = null!;
+    public DbSet<Domain.Entities.Permissao> Permissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.PerfilPermissao> PerfilPermissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.UsuarioPermissao> UsuarioPermissoes { get; set; } = null!;
+    public DbSet<Domain.Entities.StatusEnvioConvite> StatusEnvioConvites { get; set; } = null!;
+    public DbSet<Domain.Entities.Presente> Presentes { get; set; } = null!;
+    public DbSet<Domain.Entities.CategoriaPresente> CategoriaPresentes { get; set; } = null!;
 }

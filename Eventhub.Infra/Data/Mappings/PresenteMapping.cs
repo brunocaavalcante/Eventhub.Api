@@ -12,10 +12,10 @@ public class PresenteMapping : IEntityTypeConfiguration<Presente>
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.IdFoto)
+        builder.Property(p => p.IdEvento)
             .IsRequired();
 
-        builder.Property(p => p.IdEvento)
+        builder.Property(p => p.IdCategoria)
             .IsRequired();
 
         builder.Property(p => p.Nome)
@@ -39,11 +39,6 @@ public class PresenteMapping : IEntityTypeConfiguration<Presente>
             .IsRequired();
 
         // Relacionamentos
-        builder.HasOne(p => p.Foto)
-            .WithMany()
-            .HasForeignKey(p => p.IdFoto)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(p => p.Evento)
             .WithMany()
             .HasForeignKey(p => p.IdEvento)
@@ -58,5 +53,15 @@ public class PresenteMapping : IEntityTypeConfiguration<Presente>
             .WithOne(c => c.Presente)
             .HasForeignKey(c => c.IdPresente)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.Categoria)
+            .WithMany()
+            .HasForeignKey(p => p.IdCategoria)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(p => p.Galerias)
+           .WithOne(g => g.Presente)
+           .HasForeignKey(g => g.IdPresente)
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

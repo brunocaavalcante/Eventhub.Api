@@ -15,6 +15,14 @@ public class TipoEventoMapping : IEntityTypeConfiguration<TipoEvento>
         builder.Property(t => t.IdFoto)
             .IsRequired();
 
+        builder.Property(t => t.Nome)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(t => t.Icon)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.Property(t => t.Descricao)
             .IsRequired()
             .HasMaxLength(100);

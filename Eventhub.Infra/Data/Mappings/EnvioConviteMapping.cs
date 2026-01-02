@@ -15,7 +15,7 @@ public class EnvioConviteMapping : IEntityTypeConfiguration<EnvioConvite>
         builder.Property(e => e.IdConvite)
             .IsRequired();
 
-        builder.Property(e => e.IdConvidado)
+        builder.Property(e => e.IdParticipante)
             .IsRequired();
 
         builder.Property(e => e.IdEvento)
@@ -24,9 +24,10 @@ public class EnvioConviteMapping : IEntityTypeConfiguration<EnvioConvite>
         builder.Property(e => e.DataEnvio)
             .IsRequired();
 
-        builder.Property(e => e.Status)
-            .IsRequired()
-            .HasMaxLength(50);
+
+        builder.Property(e => e.IdStatusEnvioConvite)
+            .IsRequired(false);
+
 
         builder.Property(e => e.MensagemResposta)
             .HasMaxLength(1000);
@@ -35,14 +36,19 @@ public class EnvioConviteMapping : IEntityTypeConfiguration<EnvioConvite>
             .IsRequired();
 
         // Relacionamentos
+        builder.HasOne(e => e.StatusEnvioConvite)
+            .WithMany()
+            .HasForeignKey(e => e.IdStatusEnvioConvite)
+            .OnDelete(DeleteBehavior.SetNull);
+            
         builder.HasOne(e => e.Convite)
             .WithMany(c => c.EnviosConvite)
             .HasForeignKey(e => e.IdConvite)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(e => e.Convidado)
-            .WithMany(c => c.EnviosConvite)
-            .HasForeignKey(e => e.IdConvidado)
+        builder.HasOne(e => e.Participante)
+            .WithMany(p => p.EnviosConvite)
+            .HasForeignKey(e => e.IdParticipante)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Evento)

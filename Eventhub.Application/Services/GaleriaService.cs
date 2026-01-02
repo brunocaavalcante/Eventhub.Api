@@ -1,6 +1,7 @@
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Validations;
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Exceptions;
 using Eventhub.Domain.Interfaces;
 
@@ -21,8 +22,10 @@ public class GaleriaService : BaseService, IGaleriaService
     {
         ExecutarValidacao(new GaleriaValidation(), galeria);
 
+        await ValidarFotoCapaUnicaAsync(galeria);
+
         await _galeriaRepository.AddAsync(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
         return galeria;
     }
 
@@ -34,8 +37,10 @@ public class GaleriaService : BaseService, IGaleriaService
         if (galeriaExistente == null)
             throw new ExceptionValidation("Galeria não encontrada.");
 
+        await ValidarFotoCapaUnicaAsync(galeria);
+
         _galeriaRepository.Update(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
         return galeria;
     }
 
@@ -46,11 +51,21 @@ public class GaleriaService : BaseService, IGaleriaService
             throw new ExceptionValidation("Galeria não encontrada.");
 
         _galeriaRepository.Remove(galeria);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Galeria>> ObterPorEventoAsync(int idEvento)
     {
         return await _galeriaRepository.GetByEventoAsync(idEvento);
+    }
+
+    private async Task ValidarFotoCapaUnicaAsync(Galeria galeria)
+    {
+        if (galeria.Tipo != GaleriaTipo.Capa)
+            return;
+
+        var existeCapa = await _galeriaRepository.ExistsByTipoAsync(galeria.IdEvento, GaleriaTipo.Capa, galeria.Id == 0 ? null : galeria.Id);
+        if (existeCapa)
+            throw new ExceptionValidation("O evento já possui uma foto de capa.");
     }
 }

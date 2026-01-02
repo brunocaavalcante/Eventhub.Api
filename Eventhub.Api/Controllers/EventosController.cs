@@ -1,4 +1,5 @@
 using Eventhub.Api.Models;
+using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
 using Eventhub.Domain.Interfaces;
@@ -12,42 +13,23 @@ public class EventosController : BaseController
 {
     private readonly IEventoService _eventoService;
     private readonly IEventoRepository _eventoRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EventosController(IEventoService eventoService, IEventoRepository eventoRepository)
+    public EventosController(IEventoService eventoService, IEventoRepository eventoRepository, IUnitOfWork unitOfWork)
     {
         _eventoService = eventoService;
         _eventoRepository = eventoRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    /// <summary>
-    /// Obtém todos os eventos
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
-    public async Task<IActionResult> ObterTodos()
-    {
-        try
-        {
-            var eventos = await _eventoRepository.GetAllAsync();
-            return CustomResponse(eventos);
-        }
-        catch (Exception ex)
-        {
-            return TratarErros(ex);
-        }
-    }
-
-    /// <summary>
-    /// Obtém um evento por ID
-    /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(CustomResponse<Evento>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<EventoDto>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
     public async Task<IActionResult> ObterPorId(int id)
     {
         try
         {
-            var evento = await _eventoRepository.GetByIdAsync(id);
+            var evento = await _eventoService.ObterPorIdAsync(id);
             if (evento == null)
                 return CustomResponse<object>(404, "Evento não encontrado.");
 
@@ -63,12 +45,12 @@ public class EventosController : BaseController
     /// Obtém eventos por usuário criador
     /// </summary>
     [HttpGet("usuario/{idUsuario}")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<EventoAtivoDto>>), 200)]
     public async Task<IActionResult> ObterPorUsuario(int idUsuario)
     {
         try
         {
-            var eventos = await _eventoRepository.GetByUsuarioAsync(idUsuario);
+            var eventos = await _eventoService.ObterEventosPorUsuarioAsync(idUsuario);
             return CustomResponse(eventos);
         }
         catch (Exception ex)
@@ -114,15 +96,15 @@ public class EventosController : BaseController
     }
 
     /// <summary>
-    /// Obtém eventos ativos de um usuário
+    /// Obtém eventos por tipo
     /// </summary>
-    [HttpGet("usuario/{idUsuario}/ativos")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<Evento>>), 200)]
-    public async Task<IActionResult> ObterEventosAtivos(int idUsuario)
+    [HttpGet("status")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<StatusEventoDto>>), 200)]
+    public async Task<IActionResult> ObterStatusEventos()
     {
         try
         {
-            var eventos = await _eventoRepository.GetEventosAtivosByUsuarioAsync(idUsuario);
+            var eventos = await _eventoService.ObterStatusEventosAsync();
             return CustomResponse(eventos);
         }
         catch (Exception ex)
@@ -135,17 +117,21 @@ public class EventosController : BaseController
     /// Cria um novo evento
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(CustomResponse<Evento>), 201)]
+    [ProducesResponseType(typeof(CustomResponse<EventoCadastroDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
-    public async Task<IActionResult> Criar([FromBody] Evento evento)
+    public async Task<IActionResult> Criar([FromBody] EventoCadastroDto evento)
     {
         try
         {
+            await _unitOfWork.BeginTransactionAsync();
             var eventoCreated = await _eventoService.AdicionarAsync(evento);
+            await _unitOfWork.CommitTransactionAsync();
+            
             return CustomResponse(eventoCreated, 201);
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }

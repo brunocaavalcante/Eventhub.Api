@@ -12,6 +12,9 @@ public class EnderecoEventoMapping : IEntityTypeConfiguration<EnderecoEvento>
 
         builder.HasKey(e => e.Id);
 
+        builder.Property(e => e.NomeLocal)
+            .HasMaxLength(200);
+
         builder.Property(e => e.Numero)
             .IsRequired()
             .HasMaxLength(20);

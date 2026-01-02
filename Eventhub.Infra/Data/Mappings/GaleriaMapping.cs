@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,11 +16,13 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
         builder.Property(g => g.IdEvento)
             .IsRequired();
 
+        builder.Property(g => g.IdPresente)
+           .IsRequired(false);
+
         builder.Property(g => g.IdFoto)
             .IsRequired();
 
-        builder.Property(g => g.Ordem)
-            .IsRequired();
+        builder.Property(g => g.Ordem);
 
         builder.Property(g => g.Visibilidade)
             .IsRequired()
@@ -27,6 +30,12 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
 
         builder.Property(g => g.Legenda)
             .HasMaxLength(500);
+
+        builder.Property(g => g.Tipo)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(GaleriaTipo.Galeria);
 
         builder.Property(g => g.Data)
             .IsRequired();
@@ -40,6 +49,11 @@ public class GaleriaMapping : IEntityTypeConfiguration<Galeria>
         builder.HasOne(g => g.Foto)
             .WithMany(f => f.Galerias)
             .HasForeignKey(g => g.IdFoto)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(g => g.Presente)
+            .WithMany(p => p.Galerias)
+            .HasForeignKey(g => g.IdPresente)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
