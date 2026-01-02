@@ -27,10 +27,10 @@ public class PresentesControllerTests
     {
         // Arrange
         var dtos = new List<PresenteDto> { new PresenteDto { Id = 1, Nome = "Notebook" } };
-        _serviceMock.Setup(s => s.ListarTodosAsync()).ReturnsAsync(dtos);
+        _serviceMock.Setup(s => s.ListarTodosAsync(1)).ReturnsAsync(dtos);
 
         // Act
-        var result = await _controller.ListarTodos();
+        var result = await _controller.ListarTodos(1);
 
         // Assert
         var okResult = result as ObjectResult;
@@ -122,10 +122,10 @@ public class PresentesControllerTests
     public async Task ListarTodos_ServiceLancaExcecao_DeveRetornarErro()
     {
         // Arrange
-        _serviceMock.Setup(s => s.ListarTodosAsync()).ThrowsAsync(new Exception("erro"));
+        _serviceMock.Setup(s => s.ListarTodosAsync(1)).ThrowsAsync(new Exception("erro"));
 
         // Act
-        var result = await _controller.ListarTodos();
+        var result = await _controller.ListarTodos(1);
 
         // Assert
         var objectResult = result as ObjectResult;

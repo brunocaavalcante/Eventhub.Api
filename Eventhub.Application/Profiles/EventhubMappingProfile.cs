@@ -75,7 +75,11 @@ public class EventhubMappingProfile : Profile
         // Presente Mappings
         CreateMap<CreatePresenteDto, Presente>();
         CreateMap<UpdatePresenteDto, Presente>();
-        CreateMap<Presente, PresenteDto>();
         CreateMap<CategoriaPresente, CategoriaPresenteDto>();
+        CreateMap<StatusPresente, StatusPresenteDto>();
+        CreateMap<Presente, PresenteDto>().ForMember(dest => dest.Imagens, opt => opt.MapFrom(src =>
+            src.Galerias.Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Produto && g.Foto != null).Select(g => g.Foto)
+                .ToList()));
+
     }
 }

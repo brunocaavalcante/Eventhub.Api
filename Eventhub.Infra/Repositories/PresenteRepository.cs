@@ -13,4 +13,26 @@ public class PresenteRepository : Repository<Presente>, IPresenteRepository
     {
         return await _context.CategoriaPresentes.AsNoTracking().ToListAsync();
     }
+
+    public async Task<Presente?> GetByIdCompletoAsync(int id)
+    {
+        return await _dbSet
+                    .Include(p => p.Status)
+                    .Include(p => p.Categoria)
+                    .Include(p => p.Contribuicoes)
+                    .Include(p => p.Galerias).ThenInclude(g => g.Foto)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<IEnumerable<Presente>> GetByEventIdAsync(int idEvento)
+    {
+        return await _context.Presentes
+            .AsNoTracking()
+            .Include(p => p.Categoria)
+            .Include(p => p.Status)
+            .Include(p => p.Galerias)
+                .ThenInclude(g => g.Foto)
+            .Where(p => p.IdEvento == idEvento)
+            .ToListAsync();
+    }
 }

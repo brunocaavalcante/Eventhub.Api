@@ -36,6 +36,7 @@ public class PresenteService : BaseService, IPresenteService
 
         ExecutarValidacao(new PresenteValidation(), presente);
         await _presenteRepository.AddAsync(presente);
+        await _unitOfWork.SaveChangesAsync();
 
         foreach (var imageDto in dto.Imagens)
         {
@@ -45,6 +46,7 @@ public class PresenteService : BaseService, IPresenteService
             {
                 IdEvento = presente.IdEvento,
                 IdFoto = fotoDto.Id,
+                IdPresente = presente.Id,
                 Visibilidade = "Publica",
                 Tipo = GaleriaTipo.Produto,
                 Data = DateTime.UtcNow
@@ -60,7 +62,7 @@ public class PresenteService : BaseService, IPresenteService
 
     public async Task<PresenteDto> AtualizarAsync(UpdatePresenteDto dto)
     {
-        var presente = await _presenteRepository.GetByIdAsync(dto.Id);
+        var presente = await _presenteRepository.GetByIdCompletoAsync(dto.Id);
         if (presente == null)
             throw new ExceptionValidation("Presente não encontrado.");
 
@@ -70,14 +72,67 @@ public class PresenteService : BaseService, IPresenteService
 
         _presenteRepository.Update(presente);
 
-        foreach (var imageDto in dto.Imagens)
-        {
-            await _fotosService.UpdateAsync(imageDto);
-        }
+        await ProcessarImagensAsync(presente, dto.Imagens);
 
         await _unitOfWork.SaveChangesAsync();
 
         return _mapper.Map<PresenteDto>(presente);
+    }
+
+    private async Task ProcessarImagensAsync(Presente presente, ICollection<UpdateFotoDto>? imagens)
+    {
+        // Obtem galerias existentes para este presente (filtradas pelo tipo Produto)
+        var galeriasExistentes = presente.Galerias
+            .Where(g => g.Tipo == GaleriaTipo.Produto).ToList();
+
+        var idsFotosNoDto = imagens?
+            .Where(img => img.Id > 0)
+            .Select(img => img.Id)
+            .ToHashSet() ?? new HashSet<int>();
+
+        // Obtem imagens removidas
+        var galeriasParaRemover = galeriasExistentes.Where(g => !idsFotosNoDto.Contains(g.IdFoto)).ToList();
+
+        foreach (var galeria in galeriasParaRemover)
+        {
+            await _fotosService.RemoverAsync(galeria.IdFoto);
+            presente.Galerias.Remove(galeria);
+        }
+
+        // Process images from DTO
+        if (imagens != null)
+        {
+            foreach (var imageDto in imagens)
+            {
+                if (imageDto.Id > 0)
+                {
+                    await _fotosService.UpdateAsync(imageDto);
+                }
+                else
+                {
+                    var uploadFotoDto = new UploadFotoDto
+                    {
+                        NomeArquivo = imageDto.NomeArquivo,
+                        Base64 = imageDto.Base64,
+                        TipoImagem = "image/jpeg"
+                    };
+
+                    var fotoDto = await _fotosService.UploadAsync(uploadFotoDto);
+
+                    var galeria = new Galeria
+                    {
+                        IdEvento = presente.IdEvento,
+                        IdFoto = fotoDto.Id,
+                        IdPresente = presente.Id,
+                        Visibilidade = "Publica",
+                        Tipo = GaleriaTipo.Produto,
+                        Data = DateTime.UtcNow
+                    };
+
+                    presente.Galerias.Add(galeria);
+                }
+            }
+        }
     }
 
     public async Task RemoverAsync(int id)
@@ -103,13 +158,15 @@ public class PresenteService : BaseService, IPresenteService
 
     public async Task<PresenteDto?> ObterPorIdAsync(int id)
     {
-        var presente = await _presenteRepository.GetByIdAsync(id);
+        var presente = await _presenteRepository.GetByIdCompletoAsync(id);
         return presente != null ? _mapper.Map<PresenteDto>(presente) : null;
     }
 
-    public async Task<IEnumerable<PresenteDto>> ListarTodosAsync()
+    public async Task<IEnumerable<PresenteDto>> ListarTodosAsync(int idEvento)
     {
-        var presentes = await _presenteRepository.GetAllAsync();
+        if (idEvento <= 0) throw new ExceptionValidation("ID do evento inválido.");
+
+        var presentes = await _presenteRepository.GetByEventIdAsync(idEvento);
         return _mapper.Map<IEnumerable<PresenteDto>>(presentes);
     }
 

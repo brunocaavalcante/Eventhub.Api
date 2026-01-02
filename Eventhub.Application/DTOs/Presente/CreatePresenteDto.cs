@@ -7,5 +7,6 @@ public class CreatePresenteDto
     public string Nome { get; set; } = string.Empty;
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
+    public string LinkProduto { get; set; } = string.Empty;
     public List<UploadFotoDto> Imagens { get; set; } = new();
 }
