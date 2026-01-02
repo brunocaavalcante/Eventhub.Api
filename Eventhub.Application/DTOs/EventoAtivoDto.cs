@@ -2,6 +2,7 @@ namespace Eventhub.Application.DTOs;
 
 public class EventoAtivoDto
 {
+    //teste
     public int Id { get; set; }
     public int IdStatus { get; set; }
     public string Status { get; set; } = string.Empty;
