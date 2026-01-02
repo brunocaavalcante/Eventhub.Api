@@ -4,9 +4,11 @@ using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
 using Eventhub.Infra.Security;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Eventhub.Application.Profiles;
 
 namespace Eventhub.IoC;
@@ -63,5 +65,30 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(EventhubMappingProfile));
 
         return services;
+    }
+
+    /// <summary>
+    /// Aplica migrations pendentes ao banco de dados no startup da aplicação
+    /// </summary>
+    public static void ApplyDatabaseMigrations(this IApplicationBuilder app)
+    {
+        try
+        {
+            using var scope = app.ApplicationServices.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EventhubDbContext>();
+            var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("DatabaseMigration");
+
+            logger.LogInformation("Aplicando migrations pendentes ao banco de dados...");
+            db.Database.Migrate();
+            logger.LogInformation("Migrations aplicadas com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("DatabaseMigration");
+            logger.LogError(ex, "Erro ao aplicar migrations no banco de dados. A aplicação não será iniciada.");
+            throw;
+        }
     }
 }
