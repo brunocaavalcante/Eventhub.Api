@@ -12,7 +12,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration();
-//builder.Services.ConfigKeycloak(builder.Configuration);
+builder.Services.ConfigAuth0(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {

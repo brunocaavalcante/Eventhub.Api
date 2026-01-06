@@ -52,7 +52,7 @@ public static class DependencyInjection
         services.AddScoped<ITipoEventoService, TipoEventoService>();
         services.AddScoped<IFotosService, FotosService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IKeycloakService, KeycloakService>();
+        services.AddScoped<IAuth0Service, Auth0Service>();
         services.AddScoped<IPerfilService, PerfilService>();
         services.AddScoped<IEnvioConviteService, EnvioConviteService>();
         services.AddScoped<IConviteService, ConviteService>();

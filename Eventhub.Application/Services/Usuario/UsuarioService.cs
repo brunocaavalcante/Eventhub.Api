@@ -11,16 +11,16 @@ public class UsuarioService : BaseService, IUsuarioService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IKeycloakService _keycloakService;
+    private readonly IAuth0Service _auth0Service;
 
     public UsuarioService(
         IUsuarioRepository usuarioRepository,
         IUnitOfWork unitOfWork,
-        IKeycloakService keycloakService)
+        IAuth0Service auth0Service)
     {
         _usuarioRepository = usuarioRepository;
         _unitOfWork = unitOfWork;
-        _keycloakService = keycloakService;
+        _auth0Service = auth0Service;
     }
 
     public async Task<Usuario> AdicionarAsync(CreateUsuarioDto createUsuarioDto)
@@ -46,13 +46,13 @@ public class UsuarioService : BaseService, IUsuarioService
 
         try
         {
-            var keycloakId = await _keycloakService.CriarUsuarioAsync(
+            var auth0Id = await _auth0Service.CriarUsuarioAsync(
                 createUsuarioDto.Nome,
                 createUsuarioDto.Email,
                 createUsuarioDto.Password
             );
 
-            usuario.KeycloakId = keycloakId;
+            usuario.KeycloakId = auth0Id;
 
             await _unitOfWork.CommitTransactionAsync();
 
@@ -60,7 +60,7 @@ public class UsuarioService : BaseService, IUsuarioService
         }
         catch (Exception ex) when (ex is not ExceptionValidation)
         {
-            throw new ExceptionValidation($"Erro ao criar usuário no Keycloak: {ex.Message}");
+            throw new ExceptionValidation($"Erro ao criar usuário no Auth0: {ex.Message}");
         }
     }
 
@@ -74,8 +74,7 @@ public class UsuarioService : BaseService, IUsuarioService
 
         try
         {
-            // Atualizar no Keycloak
-            await _keycloakService.AtualizarUsuarioAsync(
+            await _auth0Service.AtualizarUsuarioAsync(
                 usuarioExistente.Email,
                 usuario.Nome,
                 usuario.Email != usuarioExistente.Email ? usuario.Email : null
@@ -100,7 +99,7 @@ public class UsuarioService : BaseService, IUsuarioService
 
         try
         {
-            await _keycloakService.DeletarUsuarioAsync(usuario.Email);
+            await _auth0Service.DeletarUsuarioAsync(usuario.Email);
 
             _usuarioRepository.Remove(usuario);
             await _unitOfWork.CommitTransactionAsync();
