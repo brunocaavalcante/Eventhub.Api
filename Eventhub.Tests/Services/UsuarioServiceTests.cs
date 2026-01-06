@@ -13,18 +13,18 @@ public class UsuarioServiceTests
 {
     private readonly Mock<IUsuarioRepository> _usuarioRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IKeycloakService> _keycloakServiceMock;
     private readonly UsuarioService _usuarioService;
+    private readonly Mock<IAuth0Service> _auth0ServiceMock;
 
     public UsuarioServiceTests()
     {
         _usuarioRepositoryMock = new Mock<IUsuarioRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _keycloakServiceMock = new Mock<IKeycloakService>();
+        _auth0ServiceMock = new Mock<IAuth0Service>();
         _usuarioService = new UsuarioService(
             _usuarioRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _keycloakServiceMock.Object);
+            _auth0ServiceMock.Object);
     }
 
     [Fact]
