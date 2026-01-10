@@ -81,5 +81,9 @@ public class EventhubMappingProfile : Profile
             src.Galerias.Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Produto && g.Foto != null).Select(g => g.Foto)
                 .ToList()));
 
+        // PixEvento Mappings
+        CreateMap<CreatePixEventoDto, PixEvento>();
+        CreateMap<UpdatePixEventoDto, PixEvento>();
+        CreateMap<PixEvento, PixEventoDto>();
     }
 }
