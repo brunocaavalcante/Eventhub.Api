@@ -40,7 +40,7 @@ public class PresenteMapping : IEntityTypeConfiguration<Presente>
 
         // Relacionamentos
         builder.HasOne(p => p.Evento)
-            .WithMany()
+            .WithMany(e => e.Presentes)
             .HasForeignKey(p => p.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
 

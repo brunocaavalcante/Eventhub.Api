@@ -66,12 +66,9 @@ public class PixEventoService : BaseService, IPixEventoService
         if (pixEvento == null)
             throw new ExceptionValidation("PIX não encontrado.");
 
-        // Atualizar apenas campos editáveis (NomeBeneficiario e QRCodePix)
-        // NÃO permite alterar Finalidade ou IdEvento
         pixEvento.NomeBeneficiario = dto.NomeBeneficiario;
         pixEvento.QRCodePix = dto.QRCodePix;
 
-        // Validar entidade
         ExecutarValidacao(new PixEventoValidation(), pixEvento);
 
         _pixEventoRepository.Update(pixEvento);

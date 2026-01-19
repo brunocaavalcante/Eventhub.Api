@@ -32,7 +32,7 @@ public class PixEventoMapping : IEntityTypeConfiguration<PixEvento>
 
         // Relacionamento com Evento
         builder.HasOne(p => p.Evento)
-            .WithMany()
+            .WithMany(e => e.PixEventos)
             .HasForeignKey(p => p.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
 

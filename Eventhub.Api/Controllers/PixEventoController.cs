@@ -3,6 +3,7 @@ using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Enums;
 using Eventhub.Domain.Exceptions;
+using Eventhub.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,14 +11,15 @@ namespace Eventhub.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class PixEventoController : BaseController
 {
     private readonly IPixEventoService _pixEventoService;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public PixEventoController(IPixEventoService pixEventoService)
+    public PixEventoController(IPixEventoService pixEventoService, IUnitOfWork unitOfWork)
     {
         _pixEventoService = pixEventoService;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -32,11 +34,15 @@ public class PixEventoController : BaseController
     {
         try
         {
+            await _unitOfWork.BeginTransactionAsync();
             var result = await _pixEventoService.CreateAsync(dto);
+            await _unitOfWork.CommitTransactionAsync();
+            
             return CustomResponse(result, StatusCodes.Status201Created);
         }
         catch (ExceptionValidation ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return CustomResponse<object>(StatusCodes.Status400BadRequest, ex.Message);
         }
     }

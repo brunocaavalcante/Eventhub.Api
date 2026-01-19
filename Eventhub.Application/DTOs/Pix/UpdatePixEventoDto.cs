@@ -1,5 +1,3 @@
-using Eventhub.Domain.Enums;
-
 namespace Eventhub.Application.DTOs;
 
 public class UpdatePixEventoDto
