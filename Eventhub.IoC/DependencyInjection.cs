@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IConviteRepository, ConviteRepository>();
         services.AddScoped<IPresenteRepository, PresenteRepository>();
         services.AddScoped<IPixEventoRepository, PixEventoRepository>();
+        services.AddScoped<IContribuicaoPresenteRepository, ContribuicaoPresenteRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
@@ -59,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IConviteService, ConviteService>();
         services.AddScoped<IPresenteService, PresenteService>();
         services.AddScoped<IPixEventoService, PixEventoService>();
+        services.AddScoped<IContribuicaoPresenteService, ContribuicaoPresenteService>();
 
         // HttpClient
         services.AddHttpClient();

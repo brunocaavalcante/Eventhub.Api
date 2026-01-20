@@ -18,25 +18,18 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
         builder.Property(c => c.IdParticipante)
             .IsRequired();
 
-        builder.Property(c => c.Nome)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        builder.Property(c => c.Descricao)
-            .HasMaxLength(1000);
-
         builder.Property(c => c.Valor)
             .IsRequired()
             .HasColumnType("decimal(18,2)");
-
-        builder.Property(c => c.LinkProduto)
-            .HasMaxLength(500);
 
         builder.Property(c => c.FormaPagamento)
             .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(c => c.IdStatusContribuicao)
+            .IsRequired();
+
+        builder.Property(c => c.IdFoto)
             .IsRequired();
 
         builder.Property(c => c.DataCadastro)
@@ -56,6 +49,11 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
         builder.HasOne(c => c.StatusContribuicao)
             .WithMany(status => status.Contribuicoes)
             .HasForeignKey(c => c.IdStatusContribuicao)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.Foto)
+            .WithMany(f => f.Contribuicoes)
+            .HasForeignKey(c => c.IdFoto)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

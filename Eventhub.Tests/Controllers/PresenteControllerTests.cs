@@ -13,13 +13,15 @@ public class PresentesControllerTests
 {
     private readonly Mock<IPresenteService> _serviceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IContribuicaoPresenteService> _contribuicaoServiceMock;
     private readonly PresentesController _controller;
 
     public PresentesControllerTests()
     {
         _serviceMock = new Mock<IPresenteService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _controller = new PresentesController(_serviceMock.Object, _unitOfWorkMock.Object);
+        _contribuicaoServiceMock = new Mock<IContribuicaoPresenteService>();
+        _controller = new PresentesController(_serviceMock.Object, _contribuicaoServiceMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]
@@ -84,6 +86,65 @@ public class PresentesControllerTests
         var createdResult = result as ObjectResult;
         createdResult.Should().NotBeNull();
         createdResult!.StatusCode.Should().Be(201);
+    }
+
+    [Fact]
+    public async Task CriarContribuicao_DeveRetornarCreated_ComContribuicao()
+    {
+        // Arrange
+        var dto = new CreateContribuicaoPresenteDto
+        {
+            IdPresente = 1,
+            IdParticipante = 2,
+            Valor = 50,
+            FormaPagamento = "Pix",
+            Comprovante = new UploadFotoDto
+            {
+                NomeArquivo = "comprovante.jpg",
+                Base64 = Convert.ToBase64String(new byte[10]),
+                TipoImagem = "image/jpeg"
+            }
+        };
+
+        var contribuicaoDto = new ContribuicaoPresenteDto { Id = 1, IdPresente = 1, Valor = 50 };
+        _contribuicaoServiceMock.Setup(s => s.CriarAsync(dto)).ReturnsAsync(contribuicaoDto);
+
+        // Act
+        var result = await _controller.CriarContribuicao(dto);
+
+        // Assert
+        var createdResult = result as ObjectResult;
+        createdResult.Should().NotBeNull();
+        createdResult!.StatusCode.Should().Be(201);
+    }
+
+    [Fact]
+    public async Task CriarContribuicao_QuandoServiceLancaExcecao_DeveRetornarErro()
+    {
+        // Arrange
+        var dto = new CreateContribuicaoPresenteDto
+        {
+            IdPresente = 1,
+            IdParticipante = 2,
+            Valor = 50,
+            FormaPagamento = "Pix",
+            Comprovante = new UploadFotoDto
+            {
+                NomeArquivo = "comprovante.jpg",
+                Base64 = Convert.ToBase64String(new byte[10]),
+                TipoImagem = "image/jpeg"
+            }
+        };
+
+        _contribuicaoServiceMock.Setup(s => s.CriarAsync(dto)).ThrowsAsync(new Exception("erro"));
+
+        // Act
+        var result = await _controller.CriarContribuicao(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(500);
     }
 
     [Fact]
