@@ -6,5 +6,6 @@ public enum GaleriaTipo
     Local = 2,
     Galeria = 3,
     Convite = 4,
-    Produto = 5
+    Produto = 5,
+    Comprovante = 6
 }

@@ -30,8 +30,8 @@ public class PresenteRepository : Repository<Presente>, IPresenteRepository
             .AsNoTracking()
             .Include(p => p.Categoria)
             .Include(p => p.Status)
-            .Include(p => p.Galerias)
-                .ThenInclude(g => g.Foto)
+            .Include(p => p.Contribuicoes)
+            .Include(p => p.Galerias).ThenInclude(g => g.Foto)
             .Where(p => p.IdEvento == idEvento)
             .ToListAsync();
     }
