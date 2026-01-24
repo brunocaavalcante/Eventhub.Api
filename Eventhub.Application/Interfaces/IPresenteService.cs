@@ -8,6 +8,7 @@ public interface IPresenteService
     Task<PresenteDto> AtualizarAsync(UpdatePresenteDto dto);
     Task RemoverAsync(int id);
     Task<PresenteDto?> ObterPorIdAsync(int id);
+    Task<PresenteDetalhesDto?> ObterDetalhesPorIdAsync(int id);
     Task<IEnumerable<PresenteDto>> ListarTodosAsync(int idEvento);
     Task<IEnumerable<CategoriaPresenteDto>> ListarCategoriaPresentesAsync();
 }

@@ -35,4 +35,21 @@ public class PresenteRepository : Repository<Presente>, IPresenteRepository
             .Where(p => p.IdEvento == idEvento)
             .ToListAsync();
     }
+
+    public async Task<Presente?> GetByIdDetalhesAsync(int id)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Include(p => p.Status)
+            .Include(p => p.Categoria)
+            .Include(p => p.Contribuicoes)
+                .ThenInclude(c => c.StatusContribuicao)
+            .Include(p => p.Contribuicoes)
+                .ThenInclude(c => c.Participante)
+                    .ThenInclude(part => part.Usuario)
+                        .ThenInclude(u => u.Foto)
+            .Include(p => p.Galerias)
+                .ThenInclude(g => g.Foto)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
 }

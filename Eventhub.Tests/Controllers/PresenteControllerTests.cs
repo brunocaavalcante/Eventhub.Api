@@ -72,6 +72,60 @@ public class PresentesControllerTests
     }
 
     [Fact]
+    public async Task ObterDetalhes_DeveRetornarNotFound_SeNaoEncontrado()
+    {
+        // Arrange
+        _serviceMock.Setup(s => s.ObterDetalhesPorIdAsync(1)).ReturnsAsync((PresenteDetalhesDto?)null);
+
+        // Act
+        var result = await _controller.ObterDetalhes(1);
+
+        // Assert
+        var notFoundResult = result as ObjectResult;
+        notFoundResult.Should().NotBeNull();
+        notFoundResult!.StatusCode.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task ObterDetalhes_DeveRetornarOk_QuandoEncontrado()
+    {
+        // Arrange
+        var dto = new PresenteDetalhesDto
+        {
+            Id = 1,
+            Nome = "Notebook",
+            Valor = 3000,
+            Status = new StatusPresenteDto { Id = 1, Descricao = "Disponível" },
+            Categoria = new CategoriaPresenteDto { Id = 1, Nome = "Eletrônicos" },
+            Contribuicoes = new List<ContribuicaoDetalhesDto>
+            {
+                new ContribuicaoDetalhesDto
+                {
+                    Id = 1,
+                    Valor = 500,
+                    DataCadastro = DateTime.UtcNow,
+                    Status = "Confirmado",
+                    Participante = new ParticipanteContribuicaoDto
+                    {
+                        Id = 1,
+                        Nome = "João Silva",
+                        Email = "joao@email.com"
+                    }
+                }
+            }
+        };
+        _serviceMock.Setup(s => s.ObterDetalhesPorIdAsync(1)).ReturnsAsync(dto);
+
+        // Act
+        var result = await _controller.ObterDetalhes(1);
+
+        // Assert
+        var okResult = result as ObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.StatusCode.Should().Be(200);
+    }
+
+    [Fact]
     public async Task Criar_DeveRetornarCreated_ComPresente()
     {
         // Arrange

@@ -162,6 +162,12 @@ public class PresenteService : BaseService, IPresenteService
         return presente != null ? _mapper.Map<PresenteDto>(presente) : null;
     }
 
+    public async Task<PresenteDetalhesDto?> ObterDetalhesPorIdAsync(int id)
+    {
+        var presente = await _presenteRepository.GetByIdDetalhesAsync(id);
+        return presente != null ? _mapper.Map<PresenteDetalhesDto>(presente) : null;
+    }
+
     public async Task<IEnumerable<PresenteDto>> ListarTodosAsync(int idEvento)
     {
         if (idEvento <= 0) throw new ExceptionValidation("ID do evento inválido.");

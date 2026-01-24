@@ -96,6 +96,93 @@ public class PresenteServiceTests
     }
 
     [Fact]
+    public async Task ObterDetalhesPorIdAsync_DeveRetornarNull_QuandoNaoEncontrado()
+    {
+        // Arrange
+        _repoMock.Setup(r => r.GetByIdDetalhesAsync(1)).ReturnsAsync((Presente?)null);
+
+        // Act
+        var result = await _service.ObterDetalhesPorIdAsync(1);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ObterDetalhesPorIdAsync_DeveRetornarDetalhesCompletos_QuandoEncontrado()
+    {
+        // Arrange
+        var presente = new Presente
+        {
+            Id = 1,
+            Nome = "Notebook",
+            Valor = 3000,
+            Status = new StatusPresente { Id = 1, Descricao = "Disponível" },
+            Categoria = new CategoriaPresente { Id = 1, Nome = "Eletrônicos" },
+            Contribuicoes = new List<ContribuicaoPresente>
+            {
+                new ContribuicaoPresente
+                {
+                    Id = 1,
+                    Valor = 500,
+                    DataCadastro = DateTime.UtcNow,
+                    StatusContribuicao = new StatusContribuicao { Id = 1, Descricao = "Confirmado" },
+                    Participante = new Participante
+                    {
+                        Id = 1,
+                        Usuario = new Usuario
+                        {
+                            Id = 1,
+                            Nome = "João Silva",
+                            Email = "joao@email.com",
+                            Foto = new Fotos { Id = 1, Base64 = "base64string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        var detalhesDto = new PresenteDetalhesDto
+        {
+            Id = 1,
+            Nome = "Notebook",
+            Valor = 3000,
+            Status = new StatusPresenteDto { Id = 1, Descricao = "Disponível" },
+            Categoria = new CategoriaPresenteDto { Id = 1, Nome = "Eletrônicos" },
+            Contribuicoes = new List<ContribuicaoDetalhesDto>
+            {
+                new ContribuicaoDetalhesDto
+                {
+                    Id = 1,
+                    Valor = 500,
+                    Status = "Confirmado",
+                    Participante = new ParticipanteContribuicaoDto
+                    {
+                        Id = 1,
+                        Nome = "João Silva",
+                        Email = "joao@email.com",
+                        Foto = "base64string"
+                    }
+                }
+            }
+        };
+
+        _repoMock.Setup(r => r.GetByIdDetalhesAsync(1)).ReturnsAsync(presente);
+        _mapperMock.Setup(m => m.Map<PresenteDetalhesDto>(presente)).Returns(detalhesDto);
+
+        // Act
+        var result = await _service.ObterDetalhesPorIdAsync(1);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(1);
+        result.Nome.Should().Be("Notebook");
+        result.Valor.Should().Be(3000);
+        result.Contribuicoes.Should().HaveCount(1);
+        result.Contribuicoes.First().Participante.Nome.Should().Be("João Silva");
+    }
+
+    [Fact]
     public async Task ListarTodosAsync_DeveRetornarListaDeDtos()
     {
         // Arrange

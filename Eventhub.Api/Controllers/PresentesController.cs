@@ -74,6 +74,26 @@ public class PresentesController : BaseController
         }
     }
 
+    [HttpGet("{id}/detalhes")]
+    [ProducesResponseType(typeof(CustomResponse<PresenteDetalhesDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterDetalhes(int id)
+    {
+        try
+        {
+            var presente = await _presenteService.ObterDetalhesPorIdAsync(id);
+
+            if (presente == null)
+                return CustomResponse<object>(404, "Presente não encontrado.");
+
+            return CustomResponse(presente);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(CustomResponse<PresenteDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
