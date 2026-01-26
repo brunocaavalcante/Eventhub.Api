@@ -35,6 +35,10 @@ public class ContribuicaoPresenteMapping : IEntityTypeConfiguration<Contribuicao
         builder.Property(c => c.DataCadastro)
             .IsRequired();
 
+        builder.Property(c => c.Justificativa)
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         // Relacionamentos
         builder.HasOne(c => c.Presente)
             .WithMany(p => p.Contribuicoes)
