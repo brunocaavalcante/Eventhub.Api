@@ -61,4 +61,22 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
 
         return _mapper.Map<ContribuicaoPresenteDto>(contribuicao);
     }
+
+    public async Task CancelarAsync(CancelarContribuicaoPresenteDto dto)
+    {
+        ExecutarValidacao(new CancelarContribuicaoPresenteValidation(), dto);
+
+        var contribuicao = await _contribuicaoPresenteRepository.GetByIdAsync(dto.IdContribuicao);
+        if (contribuicao == null)
+            throw new ExceptionValidation("Contribuição não encontrada.");
+
+        if (contribuicao.IdStatusContribuicao == (int)StatusContribuicaoEnum.Cancelado)
+            throw new ExceptionValidation("A contribuição já está cancelada.");
+
+        contribuicao.IdStatusContribuicao = (int)StatusContribuicaoEnum.Cancelado;
+        contribuicao.Justificativa = dto.Justificativa;
+
+        _contribuicaoPresenteRepository.Update(contribuicao);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

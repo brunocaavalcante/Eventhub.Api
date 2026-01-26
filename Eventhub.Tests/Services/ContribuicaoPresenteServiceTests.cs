@@ -109,4 +109,50 @@ public class ContribuicaoPresenteServiceTests
             }
         };
     }
+    [Fact]
+    public async Task CancelarAsync_DeveCancelarComJustificativa()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Duplicidade" };
+        var entity = new ContribuicaoPresente { Id = 1, IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(entity);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        entity.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        entity.Justificativa.Should().Be("Duplicidade");
+        _contribuicaoRepoMock.Verify(r => r.Update(entity), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveLancarExcecao_SeNaoEncontrado()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 99, Justificativa = "Motivo" };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ContribuicaoPresente?)null);
+
+        // Act
+        var act = async () => await _service.CancelarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>().WithMessage("*não encontrada*");
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveLancarExcecao_SeJaCancelada()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Motivo" };
+        var entity = new ContribuicaoPresente { Id = 1, IdStatusContribuicao = (int)StatusContribuicaoEnum.Cancelado };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(entity);
+
+        // Act
+        var act = async () => await _service.CancelarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>().WithMessage("*já está cancelada*");
+    }
 }

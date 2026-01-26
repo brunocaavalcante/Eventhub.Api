@@ -10,6 +10,7 @@ public class ContribuicaoPresente
     public decimal Valor { get; set; }
     public string FormaPagamento { get; set; } = string.Empty;
     public DateTime DataCadastro { get; set; }
+    public string? Justificativa { get; set; }
 
     // Relacionamentos
     public Presente Presente { get; set; } = null!;
