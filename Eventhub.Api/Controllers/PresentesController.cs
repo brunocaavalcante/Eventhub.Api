@@ -11,16 +11,13 @@ namespace Eventhub.Api.Controllers;
 public class PresentesController : BaseController
 {
     private readonly IPresenteService _presenteService;
-    private readonly IContribuicaoPresenteService _contribuicaoPresenteService;
     private readonly IUnitOfWork _unitOfWork;
 
     public PresentesController(
         IPresenteService presenteService,
-        IContribuicaoPresenteService contribuicaoPresenteService,
         IUnitOfWork unitOfWork)
     {
         _presenteService = presenteService;
-        _contribuicaoPresenteService = contribuicaoPresenteService;
         _unitOfWork = unitOfWork;
     }
 
@@ -111,26 +108,7 @@ public class PresentesController : BaseController
             await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
-    }
-
-    [HttpPost("contribuicoes")]
-    [ProducesResponseType(typeof(CustomResponse<ContribuicaoPresenteDto>), 201)]
-    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
-    public async Task<IActionResult> CriarContribuicao([FromBody] CreateContribuicaoPresenteDto dto)
-    {
-        try
-        {
-            await _unitOfWork.BeginTransactionAsync();
-            var contribuicao = await _contribuicaoPresenteService.CriarAsync(dto);
-            await _unitOfWork.CommitTransactionAsync();
-            return CustomResponse(contribuicao, 201);
-        }
-        catch (Exception ex)
-        {
-            await _unitOfWork.RollbackTransactionAsync();
-            return TratarErros(ex);
-        }
-    }
+    }    
 
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(CustomResponse<PresenteDto>), 200)]
