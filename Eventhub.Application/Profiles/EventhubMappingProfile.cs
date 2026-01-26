@@ -81,5 +81,27 @@ public class EventhubMappingProfile : Profile
             src.Galerias.Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Produto && g.Foto != null).Select(g => g.Foto)
                 .ToList()));
 
+        CreateMap<CreateContribuicaoPresenteDto, ContribuicaoPresente>();
+        CreateMap<ContribuicaoPresente, ContribuicaoPresenteDto>();
+
+        // Presente Detalhes Mappings
+        CreateMap<Presente, PresenteDetalhesDto>()
+            .ForMember(dest => dest.Imagens, opt => opt.MapFrom(src =>
+                src.Galerias.Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Produto && g.Foto != null)
+                    .Select(g => g.Foto).ToList()));
+
+        CreateMap<ContribuicaoPresente, ContribuicaoDetalhesDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.StatusContribuicao.Descricao))
+            .ForMember(dest => dest.Participante, opt => opt.MapFrom(src => src.Participante));
+
+        CreateMap<Participante, ParticipanteContribuicaoDto>()
+            .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : string.Empty))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Email : null))
+            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => src.Usuario != null && src.Usuario.Foto != null ? src.Usuario.Foto.Base64 : null));
+
+        // PixEvento Mappings
+        CreateMap<CreatePixEventoDto, PixEvento>();
+        CreateMap<UpdatePixEventoDto, PixEvento>();
+        CreateMap<PixEvento, PixEventoDto>();
     }
 }

@@ -1,6 +1,6 @@
 ---
 description: 'Agente especializado em gerar endpoints CRUD completos seguindo os padrões da arquitetura Eventhub (Clean Architecture, nomenclatura em português, FluentValidation, AutoMapper, CustomResponse e testes unitários).'
-tools: []
+tools: ['execute', 'read', 'edit', 'search', 'agent']
 ---
 
 # Agente de Geração de Endpoints Backend - Eventhub

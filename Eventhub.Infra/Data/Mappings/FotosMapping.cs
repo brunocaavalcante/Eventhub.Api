@@ -56,5 +56,10 @@ public class FotosMapping : IEntityTypeConfiguration<Fotos>
             .WithOne(c => c.Foto)
             .HasForeignKey(c => c.IdFoto)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(f => f.Contribuicoes)
+            .WithOne(c => c.Foto)
+            .HasForeignKey(c => c.IdFoto)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

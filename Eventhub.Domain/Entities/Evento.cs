@@ -26,4 +26,6 @@ public class Evento
     public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
     public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
     public ICollection<EnvioConvite> EnviosConvite { get; set; } = new List<EnvioConvite>();
+    public ICollection<PixEvento> PixEventos { get; set; } = new List<PixEvento>();
+    public ICollection<Presente> Presentes { get; set; } = new List<Presente>();
 }

@@ -16,4 +16,5 @@ public class Fotos
     public ICollection<Convite> Convites { get; set; } = new List<Convite>();
     public ICollection<ComentarioFoto> Comentarios { get; set; } = new List<ComentarioFoto>();
     public ICollection<CurtidaFoto> Curtidas { get; set; } = new List<CurtidaFoto>();
+    public ICollection<ContribuicaoPresente> Contribuicoes { get; set; } = new List<ContribuicaoPresente>();
 }

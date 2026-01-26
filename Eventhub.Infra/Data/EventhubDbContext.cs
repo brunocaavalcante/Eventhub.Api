@@ -32,4 +32,7 @@ public class EventhubDbContext : DbContext
     public DbSet<Domain.Entities.StatusEnvioConvite> StatusEnvioConvites { get; set; } = null!;
     public DbSet<Domain.Entities.Presente> Presentes { get; set; } = null!;
     public DbSet<Domain.Entities.CategoriaPresente> CategoriaPresentes { get; set; } = null!;
+    public DbSet<Domain.Entities.ContribuicaoPresente> ContribuicaoPresentes { get; set; } = null!;
+    public DbSet<Domain.Entities.StatusContribuicao> StatusContribuicoes { get; set; } = null!;
+    public DbSet<Domain.Entities.PixEvento> PixEventos { get; set; } = null!;
 }

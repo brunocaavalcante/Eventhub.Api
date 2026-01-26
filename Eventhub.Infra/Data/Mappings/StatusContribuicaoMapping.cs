@@ -18,7 +18,8 @@ public class StatusContribuicaoMapping : IEntityTypeConfiguration<StatusContribu
 
         // Relacionamentos
         builder.HasMany(s => s.Contribuicoes)
-            .WithOne()
+            .WithOne(c => c.StatusContribuicao)
+            .HasForeignKey(c => c.IdStatusContribuicao)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

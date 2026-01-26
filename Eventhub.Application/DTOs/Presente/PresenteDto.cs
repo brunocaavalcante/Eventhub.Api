@@ -11,4 +11,5 @@ public class PresenteDto
     public CategoriaPresenteDto Categoria { get; set; }
     public StatusPresenteDto Status { get; set; }
     public List<FotoDto> Imagens { get; set; } = new();
+    public List<ContribuicaoPresenteDto> Contribuicoes { get; set; } = new();
 }
