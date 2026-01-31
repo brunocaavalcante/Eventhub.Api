@@ -5,4 +5,5 @@ namespace Eventhub.Domain.Interfaces;
 public interface IContribuicaoPresenteRepository : IRepository<ContribuicaoPresente>
 {
     Task<decimal> GetTotalContribuidoAsync(int idPresente);
+    Task<IEnumerable<StatusContribuicao>> GetAllStatusAsync();
 }

@@ -17,4 +17,9 @@ public class ContribuicaoPresenteRepository : Repository<ContribuicaoPresente>, 
 
         return total ?? 0m;
     }
+    
+    public async Task<IEnumerable<StatusContribuicao>> GetAllStatusAsync()
+    {
+        return await _context.Set<StatusContribuicao>().ToListAsync();
+    }
 }
