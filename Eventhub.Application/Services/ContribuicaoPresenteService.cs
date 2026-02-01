@@ -31,6 +31,21 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
         _mapper = mapper;
     }
 
+    public async Task<ContribuicaoPresenteDto> AtualizarAsync(UpdateContribuicaoPresenteDto dto)
+    {
+        ExecutarValidacao(new UpdateContribuicaoPresenteValidation(), dto);
+
+        var entity = await _contribuicaoPresenteRepository.GetByIdAsync(dto.Id);
+        if (entity == null)
+            throw new ExceptionValidation("Contribuição não encontrada.");
+
+        _mapper.Map(dto, entity);
+
+        _contribuicaoPresenteRepository.Update(entity);
+        await _unitOfWork.SaveChangesAsync();
+        return _mapper.Map<ContribuicaoPresenteDto>(entity);
+    }
+
     public async Task<ContribuicaoPresenteDto> CriarAsync(CreateContribuicaoPresenteDto dto)
     {
         ExecutarValidacao(new CreateContribuicaoPresenteValidation(), dto);
@@ -38,7 +53,6 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
         var presente = await _presenteRepository.GetByIdAsync(dto.IdPresente);
         if (presente == null)
             throw new ExceptionValidation("Presente não encontrado.");
-
         var foto = await _fotosService.UploadAsync(dto.Comprovante);
 
         var contribuicao = _mapper.Map<ContribuicaoPresente>(dto);
@@ -78,5 +92,11 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
 
         _contribuicaoPresenteRepository.Update(contribuicao);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<StatusContribuicaoDto>> ObterStatusAsync()
+    {
+        var statusEntities = await _contribuicaoPresenteRepository.GetAllStatusAsync();
+        return _mapper.Map<IEnumerable<StatusContribuicaoDto>>(statusEntities);
     }
 }

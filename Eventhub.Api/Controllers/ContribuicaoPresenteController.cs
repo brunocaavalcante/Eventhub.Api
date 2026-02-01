@@ -19,6 +19,23 @@ public class ContribuicaoPresenteController : BaseController
         _unitOfWork = unitOfWork;
     }
 
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(CustomResponse<ContribuicaoPresenteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> Atualizar([FromBody] UpdateContribuicaoPresenteDto dto)
+    {
+        try
+        {
+            var contribuicao = await _contribuicaoPresenteService.AtualizarAsync(dto);
+            return CustomResponse(contribuicao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(CustomResponse<ContribuicaoPresenteDto>), 201)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
@@ -49,7 +66,22 @@ public class ContribuicaoPresenteController : BaseController
         try
         {
             await _contribuicaoPresenteService.CancelarAsync(dto);
-            return CustomResponse<object>(200);
+            return CustomResponse(200);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpGet("status")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<StatusContribuicaoDto>>), 200)]
+    public async Task<IActionResult> ObterStatus()
+    {
+        try
+        {
+            var status = await _contribuicaoPresenteService.ObterStatusAsync();
+            return CustomResponse(status);
         }
         catch (Exception ex)
         {
