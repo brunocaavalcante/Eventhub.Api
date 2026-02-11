@@ -5,3 +5,4 @@ public class UpdateContribuicaoPresenteDto
     public string? Justificativa { get; set; }
     public StatusContribuicaoDto Status { get; set; }
 }
+

@@ -181,4 +181,62 @@ public class PresenteService : BaseService, IPresenteService
         var categorias = await _presenteRepository.GetByCategoryAsync();
         return _mapper.Map<IEnumerable<CategoriaPresenteDto>>(categorias);
     }
+
+    public async Task ReservarPresenteAsync(int idPresente, ReservarPresenteDto dto)
+    {
+        ExecutarValidacao(new ReservarPresenteValidation(), dto);
+
+        var presente = await _presenteRepository.GetByIdCompletoAsync(idPresente);
+        if (presente == null)
+            throw new ExceptionValidation("Presente não encontrado.");
+
+        // RN-001: Validar se o presente está disponível
+        if (presente.IdStatus != (int)StatusPresenteEnum.Disponivel)
+            throw new ExceptionValidation("Este presente não está disponível para reserva.");
+
+        // RN-006: Validar se o presente não possui contribuições
+        if (presente.Contribuicoes != null && presente.Contribuicoes.Any())
+            throw new ExceptionValidation("Presente já possui contribuições e não pode ser reservado.");
+
+        // RN-002: Validar se já não está reservado (dupla verificação)
+        if (presente.IdParticipanteReservou.HasValue)
+            throw new ExceptionValidation("Presente já está reservado por outro convidado.");
+
+        presente.IdStatus = (int)StatusPresenteEnum.Reservado;
+        presente.IdParticipanteReservou = dto.IdParticipante;
+        presente.DataReserva = DateTime.UtcNow;
+
+        _presenteRepository.Update(presente);
+        await _unitOfWork.SaveChangesAsync();
+
+        // TODO: RN-005 - Enviar notificação para organizadores do evento
+        // await _notificacaoService.NotificarReservaPresenteAsync(presente, dto.IdParticipante);
+    }
+
+    public async Task CancelarReservaPresenteAsync(int idPresente, CancelarReservaPresenteDto dto)
+    {
+        ExecutarValidacao(new CancelarReservaPresenteValidation(), dto);
+
+        var presente = await _presenteRepository.GetByIdAsync(idPresente);
+        if (presente == null)
+            throw new ExceptionValidation("Presente não encontrado.");
+
+        // Validar se o presente está reservado
+        if (presente.IdStatus != (int)StatusPresenteEnum.Reservado)
+            throw new ExceptionValidation("Este presente não está reservado.");
+
+        // RN-003: Validar se o participante que está cancelando é o mesmo que reservou
+        if (presente.IdParticipanteReservou != dto.IdParticipante)
+            throw new ExceptionValidation("Você não tem permissão para cancelar esta reserva.");
+
+        presente.IdStatus = (int)StatusPresenteEnum.Disponivel;
+        presente.IdParticipanteReservou = null;
+        presente.DataReserva = null;
+
+        _presenteRepository.Update(presente);
+        await _unitOfWork.SaveChangesAsync();
+
+        // TODO: RN-005 - Enviar notificação para organizadores com justificativa
+        // await _notificacaoService.NotificarCancelamentoReservaPresenteAsync(presente, dto.IdParticipante, dto.Justificativa);
+    }
 }

@@ -11,4 +11,6 @@ public interface IPresenteService
     Task<PresenteDetalhesDto?> ObterDetalhesPorIdAsync(int id);
     Task<IEnumerable<PresenteDto>> ListarTodosAsync(int idEvento);
     Task<IEnumerable<CategoriaPresenteDto>> ListarCategoriaPresentesAsync();
+    Task ReservarPresenteAsync(int idPresente, ReservarPresenteDto dto);
+    Task CancelarReservaPresenteAsync(int idPresente, CancelarReservaPresenteDto dto);
 }

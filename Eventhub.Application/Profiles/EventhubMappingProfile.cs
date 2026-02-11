@@ -84,7 +84,9 @@ public class EventhubMappingProfile : Profile
         CreateMap<CreateContribuicaoPresenteDto, ContribuicaoPresente>();
         CreateMap<UpdateContribuicaoPresenteDto, ContribuicaoPresente>()
             .ForMember(dest => dest.IdStatusContribuicao, opt => opt.MapFrom(src => src.Status.Id));
+
         CreateMap<ContribuicaoPresente, ContribuicaoPresenteDto>().ReverseMap();
+
         CreateMap<StatusContribuicao, StatusContribuicaoDto>().ReverseMap();
 
         // Presente Detalhes Mappings
@@ -95,6 +97,7 @@ public class EventhubMappingProfile : Profile
 
         CreateMap<ContribuicaoPresente, ContribuicaoDetalhesDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.StatusContribuicao))
+            .ForMember(dest => dest.Comprovante, opt => opt.MapFrom(src => src.Foto))
             .ForMember(dest => dest.Participante, opt => opt.MapFrom(src => src.Participante));
 
         CreateMap<Participante, ParticipanteContribuicaoDto>()
