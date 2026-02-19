@@ -25,9 +25,9 @@ public class GaleriaRepositoryTests
         var eventoId = 1;
         // Adiciona fotos relacionadas
         context.Fotos.AddRange(
-            new Fotos { Id = 1, NomeArquivo = "foto1.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Base64 = "base64" },
-            new Fotos { Id = 2, NomeArquivo = "foto2.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Base64 = "base64" },
-            new Fotos { Id = 3, NomeArquivo = "foto3.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Base64 = "base64" }
+            new Fotos { Id = 1, NomeArquivo = "foto1.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Url = "https://cdn/foto1.jpg", ContentType = "image/jpeg" },
+            new Fotos { Id = 2, NomeArquivo = "foto2.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Url = "https://cdn/foto2.jpg", ContentType = "image/jpeg" },
+            new Fotos { Id = 3, NomeArquivo = "foto3.jpg", DataUpload = DateTime.Now, TamanhoKB = 100, Url = "https://cdn/foto3.jpg", ContentType = "image/jpeg" }
         );
 
         context.Galerias.AddRange(

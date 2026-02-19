@@ -81,7 +81,13 @@ public class PresenteRepositoryTests
         var categoria = new CategoriaPresente { Id = 1, Nome = "Eletrônicos" };
         var status = new StatusPresente { Id = 1, Descricao = "Disponível" };
         var statusContribuicao = new StatusContribuicao { Id = 1, Descricao = "Confirmado" };
-        var foto = new Fotos { Id = 1, NomeArquivo = "foto.jpg", Base64 = "base64string" };
+        var foto = new Fotos
+        {
+            Id = 1,
+            NomeArquivo = "foto.jpg",
+            Url = "https://cdn/foto.jpg",
+            ContentType = "image/jpeg"
+        };
 
         var usuario = new Usuario
         {
@@ -128,12 +134,14 @@ public class PresenteRepositoryTests
             IdPresente = presente.Id,
             IdParticipante = participante.Id,
             IdStatusContribuicao = statusContribuicao.Id,
+            IdFoto = foto.Id,
             Valor = 500,
             FormaPagamento = "Pix",
             DataCadastro = DateTime.UtcNow,
             Presente = presente,
             Participante = participante,
-            StatusContribuicao = statusContribuicao
+            StatusContribuicao = statusContribuicao,
+            Foto = foto
         };
 
         context.Fotos.Add(foto);

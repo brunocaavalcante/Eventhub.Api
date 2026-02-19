@@ -23,7 +23,14 @@ namespace Eventhub.Tests.Repositories
         [Fact]
         public async Task AddAsync_ShouldAddFoto()
         {
-            var foto = new Fotos { NomeArquivo = "img.jpg", Base64 = "base64" };
+            var foto = new Fotos
+            {
+                NomeArquivo = "img.jpg",
+                DataUpload = DateTime.UtcNow,
+                TamanhoKB = 10,
+                Url = "https://cdn/img.jpg",
+                ContentType = "image/jpeg"
+            };
             await _repository.AddAsync(foto);
             await _context.SaveChangesAsync();
             var result = await _repository.GetByIdAsync(foto.Id);
@@ -34,7 +41,14 @@ namespace Eventhub.Tests.Repositories
         [Fact]
         public async Task Update_ShouldUpdateFoto()
         {
-            var foto = new Fotos { NomeArquivo = "img.jpg", Base64 = "base64" };
+            var foto = new Fotos
+            {
+                NomeArquivo = "img.jpg",
+                DataUpload = DateTime.UtcNow,
+                TamanhoKB = 10,
+                Url = "https://cdn/img.jpg",
+                ContentType = "image/jpeg"
+            };
             await _repository.AddAsync(foto);
             await _context.SaveChangesAsync();
             foto.NomeArquivo = "img2.jpg";
@@ -48,7 +62,14 @@ namespace Eventhub.Tests.Repositories
         [Fact]
         public async Task Remove_ShouldDeleteFoto()
         {
-            var foto = new Fotos { NomeArquivo = "img.jpg", Base64 = "base64" };
+            var foto = new Fotos
+            {
+                NomeArquivo = "img.jpg",
+                DataUpload = DateTime.UtcNow,
+                TamanhoKB = 10,
+                Url = "https://cdn/img.jpg",
+                ContentType = "image/jpeg"
+            };
             await _repository.AddAsync(foto);
             await _context.SaveChangesAsync();
             _repository.Remove(foto);

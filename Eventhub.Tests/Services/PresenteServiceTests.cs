@@ -135,7 +135,13 @@ public class PresenteServiceTests
                             Id = 1,
                             Nome = "João Silva",
                             Email = "joao@email.com",
-                            Foto = new Fotos { Id = 1, Base64 = "base64string" }
+                            Foto = new Fotos
+                            {
+                                Id = 1,
+                                NomeArquivo = "foto.jpg",
+                                Url = "https://cdn/foto-usuario.jpg",
+                                ContentType = "image/jpeg"
+                            }
                         }
                     }
                 }
@@ -161,7 +167,7 @@ public class PresenteServiceTests
                         Id = 1,
                         Nome = "João Silva",
                         Email = "joao@email.com",
-                        Foto = "base64string"
+                        Foto = "https://cdn/foto-usuario.jpg"
                     }
                 }
             }

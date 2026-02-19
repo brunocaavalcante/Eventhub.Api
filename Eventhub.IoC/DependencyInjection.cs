@@ -1,4 +1,5 @@
 using Eventhub.Application.Interfaces;
+using Eventhub.Application.Settings;
 using Eventhub.Application.Services;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
@@ -21,6 +22,8 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<EventhubDbContext>(options =>
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+        services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -61,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IPresenteService, PresenteService>();
         services.AddScoped<IPixEventoService, PixEventoService>();
         services.AddScoped<IContribuicaoPresenteService, ContribuicaoPresenteService>();
+        services.AddSingleton<IImageStorageService, CloudinaryImageStorageService>();
 
         // HttpClient
         services.AddHttpClient();

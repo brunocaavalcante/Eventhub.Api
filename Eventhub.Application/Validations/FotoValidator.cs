@@ -16,6 +16,10 @@ public class UploadFotoValidator : AbstractValidator<UploadFotoDto>
         RuleFor(f => f.Base64)
             .NotEmpty().WithMessage("Arquivo é obrigatório.")
             .Must(FotoBase64Helper.IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
+
+        RuleFor(f => f.TipoArquivo)
+            .Must(t => string.IsNullOrWhiteSpace(t) || t.StartsWith("image/"))
+            .WithMessage("Tipo de arquivo inválido.");
     }
 }
 
@@ -35,6 +39,10 @@ public class UpdateFotoValidator : AbstractValidator<UpdateFotoDto>
         RuleFor(f => f.Base64)
             .NotEmpty().WithMessage("Arquivo é obrigatório.")
             .Must(FotoBase64Helper.IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
+
+        RuleFor(f => f.TipoArquivo)
+            .Must(t => string.IsNullOrWhiteSpace(t) || t.StartsWith("image/"))
+            .WithMessage("Tipo de arquivo inválido.");
     }
 }
 
@@ -50,7 +58,7 @@ internal static class FotoBase64Helper
         return Convert.TryFromBase64String(sanitized, buffer, out _);
     }
 
-    private static string Sanitize(string value)
+    public static string Sanitize(string value)
     {
         var trimmed = value.Trim();
         const string dataPrefix = "data:";

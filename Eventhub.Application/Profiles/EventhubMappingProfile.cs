@@ -28,7 +28,8 @@ public class EventhubMappingProfile : Profile
         CreateMap<EnderecoEventoDto, EnderecoEvento>().ReverseMap();
 
         CreateMap<Usuario, UsuarioInfoDto>()
-            .ForMember(dest => dest.FotoBase64, opt => opt.MapFrom(src => src.Foto != null ? src.Foto.Base64 : null));
+            .ForMember(dest => dest.FotoBase64, opt => opt.MapFrom(src =>
+                src.Foto != null ? src.Foto.Url : null));
 
         CreateMap<Participante, ParticipanteDto>()
             .ForMember(dest => dest.Usuario, opt => opt.MapFrom(src => src.Usuario))
@@ -40,7 +41,10 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : ""))
             .ForMember(dest => dest.Telefone, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Telefone : ""))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Email : ""))
-            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => src.Usuario != null && src.Usuario.Foto != null ? src.Usuario.Foto.Base64 : ""))
+            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src =>
+                src.Usuario != null && src.Usuario.Foto != null
+                    ? src.Usuario.Foto.Url
+                    : string.Empty))
             .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.EnviosConvite
                         .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.QtdAcompanhantes).FirstOrDefault()))
             .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src => src.EnviosConvite
@@ -59,7 +63,7 @@ public class EventhubMappingProfile : Profile
                 src.Galerias != null
                     ? src.Galerias
                         .Where(g => g.Tipo == Domain.Enums.GaleriaTipo.Capa && g.Foto != null)
-                        .Select(g => g.Foto.Base64)
+                        .Select(g => g.Foto!.Url)
                         .FirstOrDefault() ?? string.Empty
                     : string.Empty));
 
@@ -103,7 +107,10 @@ public class EventhubMappingProfile : Profile
         CreateMap<Participante, ParticipanteContribuicaoDto>()
             .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : string.Empty))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Email : null))
-            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => src.Usuario != null && src.Usuario.Foto != null ? src.Usuario.Foto.Base64 : null));
+            .ForMember(dest => dest.Foto, opt => opt.MapFrom(src =>
+                src.Usuario != null && src.Usuario.Foto != null
+                    ? src.Usuario.Foto.Url
+                    : null));
 
         // PixEvento Mappings
         CreateMap<CreatePixEventoDto, PixEvento>();

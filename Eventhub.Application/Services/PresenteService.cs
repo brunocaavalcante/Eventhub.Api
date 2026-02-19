@@ -114,7 +114,7 @@ public class PresenteService : BaseService, IPresenteService
                     {
                         NomeArquivo = imageDto.NomeArquivo,
                         Base64 = imageDto.Base64,
-                        TipoImagem = "image/jpeg"
+                        TipoImagem = imageDto.TipoImagem
                     };
 
                     var fotoDto = await _fotosService.UploadAsync(uploadFotoDto);
