@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
 using FluentAssertions;
@@ -21,9 +22,9 @@ public class ContribuicaoPresenteRepositoryTests
     {
         using var context = CreateInMemoryContext();
         context.ContribuicaoPresentes.AddRange(
-            new ContribuicaoPresente { IdPresente = 1, Valor = 50m },
-            new ContribuicaoPresente { IdPresente = 1, Valor = 25m },
-            new ContribuicaoPresente { IdPresente = 2, Valor = 100m }
+            new ContribuicaoPresente { IdPresente = 1, IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado, Valor = 50m },
+            new ContribuicaoPresente { IdPresente = 1, IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado, Valor = 25m },
+            new ContribuicaoPresente { IdPresente = 2, IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado, Valor = 100m }
         );
         await context.SaveChangesAsync();
         var repo = new ContribuicaoPresenteRepository(context);
