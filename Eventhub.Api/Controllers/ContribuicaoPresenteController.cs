@@ -55,9 +55,6 @@ public class ContribuicaoPresenteController : BaseController
         }
     }
 
-    /// <summary>
-    /// Cancela uma contribuição de presente
-    /// </summary>
     [HttpPost("cancelar")]
     [ProducesResponseType(typeof(CustomResponse<object>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
@@ -66,6 +63,22 @@ public class ContribuicaoPresenteController : BaseController
         try
         {
             await _contribuicaoPresenteService.CancelarAsync(dto);
+            return CustomResponse(200);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("confirmar")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> Confirmar([FromBody] ConfirmarContribuicaoPresenteDto dto)
+    {
+        try
+        {
+            await _contribuicaoPresenteService.ConfirmarAsync(dto);
             return CustomResponse(200);
         }
         catch (Exception ex)
