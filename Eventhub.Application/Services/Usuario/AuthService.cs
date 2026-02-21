@@ -172,7 +172,9 @@ public class AuthService : BaseService, IAuthService
             Nome = usuario.Nome,
             Email = usuario.Email,
             Telefone = usuario.Telefone,
-            FotoBase64 = usuario.Foto != null ? usuario.Foto.Base64 : "",
+            FotoBase64 = usuario.Foto != null
+                ? usuario.Foto.Url
+                : string.Empty,
             DataCadastro = usuario.DataCadastro,
             Status = usuario.Status
         };

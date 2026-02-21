@@ -63,16 +63,6 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
         await _contribuicaoPresenteRepository.AddAsync(contribuicao);
         await _unitOfWork.SaveChangesAsync();
 
-        var totalContribuido = await _contribuicaoPresenteRepository.GetTotalContribuidoAsync(dto.IdPresente);
-        var novoStatus = totalContribuido >= presente.Valor ? StatusPresenteEnum.Reservado : StatusPresenteEnum.EmArrecadacao;
-
-        if (presente.IdStatus != (int)novoStatus)
-        {
-            presente.IdStatus = (int)novoStatus;
-            _presenteRepository.Update(presente);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
         return _mapper.Map<ContribuicaoPresenteDto>(contribuicao);
     }
 
@@ -92,6 +82,55 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
 
         _contribuicaoPresenteRepository.Update(contribuicao);
         await _unitOfWork.SaveChangesAsync();
+
+        var totalContribuido = await _contribuicaoPresenteRepository.GetTotalContribuidoAsync(contribuicao.IdPresente);
+        var presente = await _presenteRepository.GetByIdAsync(contribuicao.IdPresente);
+        if (presente == null) throw new ExceptionValidation("Presente não encontrado.");
+
+        var novoStatus = StatusPresenteEnum.Disponivel;
+
+        if (totalContribuido > 0)
+            novoStatus = totalContribuido >= presente.Valor ? StatusPresenteEnum.Reservado : StatusPresenteEnum.EmArrecadacao;
+
+
+        if (presente.IdStatus != (int)novoStatus)
+        {
+            presente.IdStatus = (int)novoStatus;
+            _presenteRepository.Update(presente);
+            await _unitOfWork.SaveChangesAsync();
+        }
+    }
+
+    public async Task ConfirmarAsync(ConfirmarContribuicaoPresenteDto dto)
+    {
+        if (dto.IdContribuicao <= 0 || dto.IdPresente <= 0)
+            throw new ExceptionValidation("Id da contribuição ou do presente inválido.");
+
+        var contribuicao = await _contribuicaoPresenteRepository.GetByIdAsync(dto.IdContribuicao);
+        if (contribuicao == null)
+            throw new ExceptionValidation("Contribuição não encontrada.");
+
+        if (contribuicao.IdStatusContribuicao == (int)StatusContribuicaoEnum.Confirmado)
+            throw new ExceptionValidation("A contribuição já está confirmada.");
+
+        contribuicao.IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado;
+
+        var presente = await _presenteRepository.GetByIdAsync(dto.IdPresente);
+        if (presente == null)
+            throw new ExceptionValidation("Presente não encontrado.");
+
+        _contribuicaoPresenteRepository.Update(contribuicao);
+        await _unitOfWork.SaveChangesAsync();
+
+        var totalContribuido = await _contribuicaoPresenteRepository.GetTotalContribuidoAsync(dto.IdPresente);
+        var novoStatus = totalContribuido >= presente.Valor ? StatusPresenteEnum.Reservado : StatusPresenteEnum.EmArrecadacao;
+
+        if (presente.IdStatus != (int)novoStatus)
+        {
+            presente.IdStatus = (int)novoStatus;
+            _presenteRepository.Update(presente);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
     public async Task<IEnumerable<StatusContribuicaoDto>> ObterStatusAsync()

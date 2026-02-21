@@ -4,6 +4,7 @@ using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eventhub.Infra.Migrations
 {
     [DbContext(typeof(EventhubDbContext))]
-    partial class EventhubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260211132549_AddColumnReservaPresente")]
+    partial class AddColumnReservaPresente
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -375,9 +378,9 @@ namespace Eventhub.Infra.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ContentType")
+                    b.Property<string>("Base64")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("LONGTEXT");
 
                     b.Property<DateTime>("DataUpload")
                         .HasColumnType("datetime(6)");
@@ -387,17 +390,8 @@ namespace Eventhub.Infra.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("PublicId")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
                     b.Property<int>("TamanhoKB")
                         .HasColumnType("int");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("varchar(2048)");
 
                     b.HasKey("Id");
 
@@ -804,6 +798,9 @@ namespace Eventhub.Infra.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<int?>("ParticipanteReservouId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Valor")
                         .HasColumnType("decimal(18,2)");
 
@@ -814,6 +811,8 @@ namespace Eventhub.Infra.Migrations
                     b.HasIndex("IdEvento");
 
                     b.HasIndex("IdStatus");
+
+                    b.HasIndex("ParticipanteReservouId");
 
                     b.ToTable("Presente", (string)null);
                 });
@@ -1452,9 +1451,15 @@ namespace Eventhub.Infra.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Eventhub.Domain.Entities.Participante", "ParticipanteReservou")
+                        .WithMany()
+                        .HasForeignKey("ParticipanteReservouId");
+
                     b.Navigation("Categoria");
 
                     b.Navigation("Evento");
+
+                    b.Navigation("ParticipanteReservou");
 
                     b.Navigation("Status");
                 });

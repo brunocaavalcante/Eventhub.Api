@@ -112,4 +112,88 @@ public class ContribuicaoPresenteControllerTests
         objectResult!.StatusCode.Should().Be(500);
     }
 
+    [Fact]
+    public async Task Confirmar_DeveRetornarOk_QuandoSucesso()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        _serviceMock.Setup(s => s.ConfirmarAsync(dto)).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.Confirmar(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(200);
+        _serviceMock.Verify(s => s.ConfirmarAsync(dto), Times.Once);
+    }
+
+    [Fact]
+    public async Task Confirmar_DeveRetornarErro_QuandoServiceLancaExcecao()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        _serviceMock.Setup(s => s.ConfirmarAsync(dto)).ThrowsAsync(new Exception("Erro ao confirmar"));
+
+        // Act
+        var result = await _controller.Confirmar(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task Confirmar_DeveRetornarErro_QuandoContribuicaoNaoEncontrada()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 999, IdPresente = 10 };
+        _serviceMock.Setup(s => s.ConfirmarAsync(dto))
+            .ThrowsAsync(new Domain.Exceptions.ExceptionValidation("Contribuição não encontrada."));
+
+        // Act
+        var result = await _controller.Confirmar(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task Confirmar_DeveRetornarErro_QuandoContribuicaoJaConfirmada()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        _serviceMock.Setup(s => s.ConfirmarAsync(dto))
+            .ThrowsAsync(new Domain.Exceptions.ExceptionValidation("A contribuição já está confirmada."));
+
+        // Act
+        var result = await _controller.Confirmar(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task Confirmar_DeveRetornarErro_QuandoIdInvalido()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 0, IdPresente = 0 };
+        _serviceMock.Setup(s => s.ConfirmarAsync(dto))
+            .ThrowsAsync(new Domain.Exceptions.ExceptionValidation("Id da contribuição ou do presente inválido."));
+
+        // Act
+        var result = await _controller.Confirmar(dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(400);
+    }
+
 }

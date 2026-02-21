@@ -152,4 +152,44 @@ public class PresentesController : BaseController
             return TratarErros(ex);
         }
     }
+
+    [HttpPost("{id}/reservar")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ReservarPresente(int id, [FromBody] ReservarPresenteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            await _presenteService.ReservarPresenteAsync(id, dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse<string>("Presente reservado com sucesso! O organizador foi notificado.", 200);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("{id}/cancelar-reserva")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> CancelarReservaPresente(int id, [FromBody] CancelarReservaPresenteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            await _presenteService.CancelarReservaPresenteAsync(id, dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse<string>("Reserva cancelada. O presente voltou a ficar disponível.", 200);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
 }

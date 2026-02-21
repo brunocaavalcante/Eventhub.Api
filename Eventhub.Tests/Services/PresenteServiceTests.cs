@@ -135,7 +135,13 @@ public class PresenteServiceTests
                             Id = 1,
                             Nome = "João Silva",
                             Email = "joao@email.com",
-                            Foto = new Fotos { Id = 1, Base64 = "base64string" }
+                            Foto = new Fotos
+                            {
+                                Id = 1,
+                                NomeArquivo = "foto.jpg",
+                                Url = "https://cdn/foto-usuario.jpg",
+                                ContentType = "image/jpeg"
+                            }
                         }
                     }
                 }
@@ -155,13 +161,13 @@ public class PresenteServiceTests
                 {
                     Id = 1,
                     Valor = 500,
-                    Status = "Confirmado",
+                    Status = new StatusContribuicaoDto { Id = 1, Descricao = "Confirmado" },
                     Participante = new ParticipanteContribuicaoDto
                     {
                         Id = 1,
                         Nome = "João Silva",
                         Email = "joao@email.com",
-                        Foto = "base64string"
+                        Foto = "https://cdn/foto-usuario.jpg"
                     }
                 }
             }
@@ -573,6 +579,227 @@ public class PresenteServiceTests
         _fotosServiceMock.Verify(f => f.RemoverAsync(50), Times.Once);
         presente.Galerias.Should().BeEmpty();
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    #endregion
+
+    #region ReservarPresente
+
+    [Fact]
+    public async Task ReservarPresenteAsync_DeveReservar_ComSucesso()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            Nome = "Notebook", 
+            IdStatus = 1, // Disponível
+            Contribuicoes = new List<ContribuicaoPresente>()
+        };
+
+        _repoMock.Setup(r => r.GetByIdCompletoAsync(1)).ReturnsAsync(presente);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.ReservarPresenteAsync(1, dto);
+
+        // Assert
+        presente.IdStatus.Should().Be(2); // Reservado
+        presente.IdParticipanteReservou.Should().Be(123);
+        presente.DataReserva.Should().NotBeNull();
+        _repoMock.Verify(r => r.Update(It.IsAny<Presente>()), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReservarPresenteAsync_DeveLancarExcecao_QuandoPresenteNaoEncontrado()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        _repoMock.Setup(r => r.GetByIdCompletoAsync(1)).ReturnsAsync((Presente?)null);
+
+        // Act
+        Func<Task> act = async () => await _service.ReservarPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não encontrado*");
+    }
+
+    [Fact]
+    public async Task ReservarPresenteAsync_DeveLancarExcecao_QuandoPresenteNaoEstaDisponivel()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            IdStatus = 2 // Já reservado
+        };
+
+        _repoMock.Setup(r => r.GetByIdCompletoAsync(1)).ReturnsAsync(presente);
+
+        // Act
+        Func<Task> act = async () => await _service.ReservarPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não está disponível*");
+    }
+
+    [Fact]
+    public async Task ReservarPresenteAsync_DeveLancarExcecao_QuandoPresentePossuiContribuicoes()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            IdStatus = 1,
+            Contribuicoes = new List<ContribuicaoPresente> 
+            { 
+                new ContribuicaoPresente { Id = 1, Valor = 100 } 
+            }
+        };
+
+        _repoMock.Setup(r => r.GetByIdCompletoAsync(1)).ReturnsAsync(presente);
+
+        // Act
+        Func<Task> act = async () => await _service.ReservarPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*possui contribuições*");
+    }
+
+    [Fact]
+    public async Task ReservarPresenteAsync_DeveLancarExcecao_QuandoPresenteJaReservado()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            IdStatus = 1,
+            Contribuicoes = new List<ContribuicaoPresente>(),
+            IdParticipanteReservou = 999 // Já reservado por outro
+        };
+
+        _repoMock.Setup(r => r.GetByIdCompletoAsync(1)).ReturnsAsync(presente);
+
+        // Act
+        Func<Task> act = async () => await _service.ReservarPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*já está reservado*");
+    }
+
+    #endregion
+
+    #region CancelarReservaPresente
+
+    [Fact]
+    public async Task CancelarReservaPresenteAsync_DeveCancelar_ComSucesso()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Consegui melhor preço em outro lugar"
+        };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            Nome = "Notebook", 
+            IdStatus = 2, // Reservado
+            IdParticipanteReservou = 123,
+            DataReserva = DateTime.UtcNow.AddDays(-1)
+        };
+
+        _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(presente);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarReservaPresenteAsync(1, dto);
+
+        // Assert
+        presente.IdStatus.Should().Be(1); // Disponível
+        presente.IdParticipanteReservou.Should().BeNull();
+        presente.DataReserva.Should().BeNull();
+        _repoMock.Verify(r => r.Update(It.IsAny<Presente>()), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelarReservaPresenteAsync_DeveLancarExcecao_QuandoPresenteNaoEncontrado()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Motivo válido"
+        };
+        _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Presente?)null);
+
+        // Act
+        Func<Task> act = async () => await _service.CancelarReservaPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não encontrado*");
+    }
+
+    [Fact]
+    public async Task CancelarReservaPresenteAsync_DeveLancarExcecao_QuandoPresenteNaoEstaReservado()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Motivo válido"
+        };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            IdStatus = 1 // Disponível (não reservado)
+        };
+
+        _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(presente);
+
+        // Act
+        Func<Task> act = async () => await _service.CancelarReservaPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não está reservado*");
+    }
+
+    [Fact]
+    public async Task CancelarReservaPresenteAsync_DeveLancarExcecao_QuandoParticipanteDiferente()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Motivo válido"
+        };
+        var presente = new Presente 
+        { 
+            Id = 1, 
+            IdStatus = 2,
+            IdParticipanteReservou = 999 // Reservado por outro participante
+        };
+
+        _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(presente);
+
+        // Act
+        Func<Task> act = async () => await _service.CancelarReservaPresenteAsync(1, dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não tem permissão*");
     }
 
     #endregion

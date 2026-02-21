@@ -48,6 +48,8 @@ public class PresenteRepository : Repository<Presente>, IPresenteRepository
                 .ThenInclude(c => c.Participante)
                     .ThenInclude(part => part.Usuario)
                         .ThenInclude(u => u.Foto)
+            .Include(p => p.Contribuicoes)
+                .ThenInclude(c => c.Foto)
             .Include(p => p.Galerias)
                 .ThenInclude(g => g.Foto)
             .FirstOrDefaultAsync(p => p.Id == id);

@@ -101,7 +101,7 @@ public class PresentesControllerTests
                     Id = 1,
                     Valor = 500,
                     DataCadastro = DateTime.UtcNow,
-                    Status = "Confirmado",
+                    Status = new StatusContribuicaoDto { Id = 1, Descricao = "Confirmado" },
                     Participante = new ParticipanteContribuicaoDto
                     {
                         Id = 1,
@@ -184,5 +184,95 @@ public class PresentesControllerTests
         var objectResult = result as ObjectResult;
         objectResult.Should().NotBeNull();
         objectResult!.StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task ReservarPresente_DeveRetornarOk_ComSucesso()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        _serviceMock.Setup(s => s.ReservarPresenteAsync(1, dto)).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.ReservarPresente(1, dto);
+
+        // Assert
+        var okResult = result as ObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.StatusCode.Should().Be(200);
+        _serviceMock.Verify(s => s.ReservarPresenteAsync(1, dto), Times.Once);
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(u => u.CommitTransactionAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReservarPresente_DeveRetornarErro_QuandoServiceLancaExcecao()
+    {
+        // Arrange
+        var dto = new ReservarPresenteDto { IdParticipante = 123 };
+        _serviceMock.Setup(s => s.ReservarPresenteAsync(1, dto))
+            .ThrowsAsync(new Exception("Presente não disponível"));
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.RollbackTransactionAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.ReservarPresente(1, dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(500);
+        _unitOfWorkMock.Verify(u => u.RollbackTransactionAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelarReservaPresente_DeveRetornarOk_ComSucesso()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Consegui melhor preço em outro lugar"
+        };
+        _serviceMock.Setup(s => s.CancelarReservaPresenteAsync(1, dto)).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.CancelarReservaPresente(1, dto);
+
+        // Assert
+        var okResult = result as ObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.StatusCode.Should().Be(200);
+        _serviceMock.Verify(s => s.CancelarReservaPresenteAsync(1, dto), Times.Once);
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(u => u.CommitTransactionAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelarReservaPresente_DeveRetornarErro_QuandoServiceLancaExcecao()
+    {
+        // Arrange
+        var dto = new CancelarReservaPresenteDto 
+        { 
+            IdParticipante = 123,
+            Justificativa = "Motivo válido"
+        };
+        _serviceMock.Setup(s => s.CancelarReservaPresenteAsync(1, dto))
+            .ThrowsAsync(new Exception("Presente não está reservado"));
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.RollbackTransactionAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.CancelarReservaPresente(1, dto);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(500);
+        _unitOfWorkMock.Verify(u => u.RollbackTransactionAsync(), Times.Once);
     }
 }

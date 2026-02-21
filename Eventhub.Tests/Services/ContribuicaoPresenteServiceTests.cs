@@ -72,27 +72,6 @@ public class ContribuicaoPresenteServiceTests
         _contribuicaoRepoMock.Verify(r => r.AddAsync(contribuicao), Times.Once);
     }
 
-    [Fact]
-    public async Task CriarAsync_DeveAtualizarPresenteParaReservado_QuandoTotalAtingeValor()
-    {
-        var dto = CriarDtoValido();
-        var presente = new Presente { Id = dto.IdPresente, Valor = 100m, IdStatus = (int)StatusPresenteEnum.Disponivel };
-        var fotoDto = new FotoDto { Id = 10 };
-        var contribuicao = new ContribuicaoPresente();
-
-        _presenteRepoMock.Setup(r => r.GetByIdAsync(dto.IdPresente)).ReturnsAsync(presente);
-        _fotosServiceMock.Setup(f => f.UploadAsync(dto.Comprovante)).ReturnsAsync(fotoDto);
-        _mapperMock.Setup(m => m.Map<ContribuicaoPresente>(dto)).Returns(contribuicao);
-        _contribuicaoRepoMock.Setup(r => r.AddAsync(contribuicao)).Returns(Task.CompletedTask);
-        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(dto.IdPresente)).ReturnsAsync(100m);
-        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
-
-        await _service.CriarAsync(dto);
-
-        presente.IdStatus.Should().Be((int)StatusPresenteEnum.Reservado);
-        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
-    }
-
     private static CreateContribuicaoPresenteDto CriarDtoValido()
     {
         return new CreateContribuicaoPresenteDto
@@ -109,22 +88,40 @@ public class ContribuicaoPresenteServiceTests
             }
         };
     }
+
     [Fact]
-    public async Task CancelarAsync_DeveCancelarComJustificativa()
+    public async Task CancelarAsync_DeveCancelarComJustificativa_EManterStatusPresente()
     {
         // Arrange
         var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Duplicidade" };
-        var entity = new ContribuicaoPresente { Id = 1, IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado };
-        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(entity);
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 300m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.EmArrecadacao 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(500m); // Ainda tem contribuições
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
         await _service.CancelarAsync(dto);
 
         // Assert
-        entity.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
-        entity.Justificativa.Should().Be("Duplicidade");
-        _contribuicaoRepoMock.Verify(r => r.Update(entity), Times.Once);
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        contribuicao.Justificativa.Should().Be("Duplicidade");
+        _contribuicaoRepoMock.Verify(r => r.Update(contribuicao), Times.Once);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.EmArrecadacao); // Status continua
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once); // Apenas uma vez (sem mudança no presente)
     }
 
     [Fact]
@@ -154,5 +151,416 @@ public class ContribuicaoPresenteServiceTests
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>().WithMessage("*já está cancelada*");
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveAlterarStatusPresenteParaDisponivel_QuandoTotalFicaZero()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Cancelamento total" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 500m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.EmArrecadacao 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(0m); // Total fica zero
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.Disponivel);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2)); // Uma para contribuição, outra para presente
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveAlterarStatusPresenteParaEmArrecadacao_QuandoTotalParcial()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Erro ao contribuir" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 600m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Reservado // Estava reservado
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(400m); // Total < valor do presente
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.EmArrecadacao);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveManterStatusReservado_QuandoTotalAindaAtingeValor()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Duplicidade" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 200m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Reservado 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(1000m); // Total ainda >= valor
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.Reservado); // Mantém reservado
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Never); // Não atualiza o presente
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once); // Apenas uma vez para contribuição
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveLancarExcecao_QuandoPresenteNaoEncontrado()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Erro" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 999, // Presente inexistente
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Presente?)null);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(999)).ReturnsAsync(0m);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        var act = async () => await _service.CancelarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>().WithMessage("*Presente não encontrado*");
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveAtualizarApenasPresenteQuandoStatusMuda()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Teste" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 100m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Reservado 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(200m); // Status deve mudar para EmArrecadacao
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.EmArrecadacao);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task CancelarAsync_DeveAlterarStatusDeReservadoParaDisponivel()
+    {
+        // Arrange
+        var dto = new CancelarContribuicaoPresenteDto { IdContribuicao = 1, Justificativa = "Último cancelamento" };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
+            Valor = 1000m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Reservado 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(0m); // Sem contribuições restantes
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.CancelarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.Disponivel);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveConfirmarContribuicao_QuandoValido()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.EmAnalise,
+            Valor = 500m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Disponivel 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(500m);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.ConfirmarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Confirmado);
+        _contribuicaoRepoMock.Verify(r => r.Update(contribuicao), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveAtualizarStatusPresente_ParaEmArrecadacao_QuandoParcial()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.EmAnalise,
+            Valor = 300m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.Disponivel 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(300m);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.ConfirmarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Confirmado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.EmArrecadacao);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveAtualizarStatusPresente_ParaReservado_QuandoAtingeValorTotal()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.EmAnalise,
+            Valor = 700m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.EmArrecadacao 
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(1000m); // Total completo
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.ConfirmarAsync(dto);
+
+        // Assert
+        contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Confirmado);
+        presente.IdStatus.Should().Be((int)StatusPresenteEnum.Reservado);
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveLancarExcecao_QuandoIdContribuicaoInvalido()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 0, IdPresente = 10 };
+
+        // Act
+        var act = async () => await _service.ConfirmarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*Id da contribuição ou do presente inválido*");
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveLancarExcecao_QuandoIdPresenteInvalido()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 0 };
+
+        // Act
+        var act = async () => await _service.ConfirmarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*Id da contribuição ou do presente inválido*");
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveLancarExcecao_QuandoContribuicaoNaoEncontrada()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 999, IdPresente = 10 };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((ContribuicaoPresente?)null);
+
+        // Act
+        var act = async () => await _service.ConfirmarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*Contribuição não encontrada*");
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveLancarExcecao_QuandoContribuicaoJaConfirmada()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado // Já confirmado
+        };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+
+        // Act
+        var act = async () => await _service.ConfirmarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*já está confirmada*");
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_DeveLancarExcecao_QuandoPresenteNaoEncontrado()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 999 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 999,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.EmAnalise
+        };
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Presente?)null);
+
+        // Act
+        var act = async () => await _service.ConfirmarAsync(dto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*Presente não encontrado*");
+    }
+
+    [Fact]
+    public async Task ConfirmarAsync_NaoDeveAtualizarPresente_QuandoStatusJaCorreto()
+    {
+        // Arrange
+        var dto = new ConfirmarContribuicaoPresenteDto { IdContribuicao = 1, IdPresente = 10 };
+        var contribuicao = new ContribuicaoPresente 
+        { 
+            Id = 1, 
+            IdPresente = 10,
+            IdStatusContribuicao = (int)StatusContribuicaoEnum.EmAnalise,
+            Valor = 500m
+        };
+        var presente = new Presente 
+        { 
+            Id = 10, 
+            Valor = 1000m, 
+            IdStatus = (int)StatusPresenteEnum.EmArrecadacao // Já está correto
+        };
+
+        _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
+        _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
+        _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(500m);
+        _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        await _service.ConfirmarAsync(dto);
+
+        // Assert
+        _presenteRepoMock.Verify(r => r.Update(presente), Times.Never);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once); // Apenas uma vez para a contribuição
     }
 }

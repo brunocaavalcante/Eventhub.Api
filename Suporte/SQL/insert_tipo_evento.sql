@@ -1,5 +1,5 @@
-INSERT INTO Fotos (Id, NomeArquivo, Base64, DataUpload, TamanhoKB)
-VALUES (1, 'sem-foto.png', '', NOW(), 0);
+INSERT INTO Fotos (Id, NomeArquivo, DataUpload, TamanhoKB, Url, PublicId, ContentType)
+VALUES (1, 'sem-foto.png', NOW(), 0, 'https://cdn.exemplo/sem-foto.png', NULL, 'image/png');
 
 INSERT INTO TipoEvento (Id, Icon, Nome, Descricao, IdFoto)
 VALUES

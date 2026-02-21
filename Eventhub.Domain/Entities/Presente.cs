@@ -11,6 +11,8 @@ public class Presente
     public int IdCategoria { get; set; }
     public int IdStatus { get; set; }
     public DateTime DataCadastro { get; set; }
+    public int? IdParticipanteReservou { get; set; }
+    public DateTime? DataReserva { get; set; }
 
     // Relacionamentos
     public Evento Evento { get; set; } = null!;

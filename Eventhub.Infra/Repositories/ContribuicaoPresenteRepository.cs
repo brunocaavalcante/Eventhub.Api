@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
 using Eventhub.Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ public class ContribuicaoPresenteRepository : Repository<ContribuicaoPresente>, 
     public async Task<decimal> GetTotalContribuidoAsync(int idPresente)
     {
         var total = await _dbSet
-            .Where(c => c.IdPresente == idPresente)
+            .Where(c => c.IdPresente == idPresente && c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Confirmado)
             .SumAsync(c => (decimal?)c.Valor);
 
         return total ?? 0m;

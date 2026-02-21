@@ -22,9 +22,13 @@ public class FotosMapping : IEntityTypeConfiguration<Fotos>
         builder.Property(f => f.TamanhoKB)
             .IsRequired();
 
-        builder.Property(f => f.Base64)
+        builder.Property(f => f.Url)
             .IsRequired()
-            .HasColumnType("LONGTEXT");
+            .HasMaxLength(2048);
+
+        builder.Property(f => f.PublicId)
+            .HasMaxLength(255)
+            .IsRequired(false);
 
         // Relacionamentos
         builder.HasMany(f => f.TipoEventos)
