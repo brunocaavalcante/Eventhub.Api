@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IPresenteRepository, PresenteRepository>();
         services.AddScoped<IPixEventoRepository, PixEventoRepository>();
         services.AddScoped<IContribuicaoPresenteRepository, ContribuicaoPresenteRepository>();
+        services.AddScoped<IStatusPresenteRepository, StatusPresenteRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
