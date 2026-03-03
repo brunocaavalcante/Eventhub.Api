@@ -30,6 +30,9 @@ public class ModuloMapping : IEntityTypeConfiguration<Modulo>
 
         builder.Property(m => m.Ordem)
             .IsRequired();
+        
+        builder.Property(m => m.ShowInMenu)
+            .IsRequired();
 
         builder.HasMany(m => m.Permissoes)
             .WithOne(p => p.Modulo)

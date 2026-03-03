@@ -116,7 +116,7 @@ public class PresenteService : BaseService, IPresenteService
                     var uploadFotoDto = new UploadFotoDto
                     {
                         NomeArquivo = imageDto.NomeArquivo,
-                        Base64 = imageDto.Base64,
+                        Base64 = imageDto.Base64 ?? string.Empty,
                         TipoImagem = imageDto.TipoImagem
                     };
 
