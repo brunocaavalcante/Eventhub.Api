@@ -48,4 +48,24 @@ public class EventoRepository : Repository<Evento>, IEventoRepository
             .OrderBy(e => e.DataInicio)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Evento>> GetEventosByParticipanteUsuarioAsync(int idUsuario)
+    {
+        return await _dbSet
+            .Where(e => e.Participantes.Any(p => p.IdUsuario == idUsuario))
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Status)
+            .Include(e => e.Galerias).ThenInclude(g => g.Foto)
+            .OrderBy(e => e.DataInicio)
+            .ToListAsync();
+    }
+
+    public async Task<Evento?> GetByTokenAsync(Guid token)
+    {
+        return await _dbSet
+            .Include(e => e.Status)
+            .Include(e => e.TipoEvento)
+            .Include(e => e.Endereco)
+            .FirstOrDefaultAsync(e => e.TokenConvite == token);
+    }
 }

@@ -42,7 +42,7 @@ public class EventosController : BaseController
     }
 
     /// <summary>
-    /// Obtém eventos por usuário criador
+    /// Obtém eventos do usuário (criados e participações)
     /// </summary>
     [HttpGet("usuario/{idUsuario}")]
     [ProducesResponseType(typeof(CustomResponse<IEnumerable<EventoAtivoDto>>), 200)]
@@ -171,6 +171,25 @@ public class EventosController : BaseController
         {
             await _eventoService.RemoverAsync(id);
             return CustomResponse<object>(new { }, 204);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpGet("token/{token:guid}")]
+    [ProducesResponseType(typeof(CustomResponse<EventoAtivoDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPorToken(Guid token)
+    {
+        try
+        {
+            var evento = await _eventoService.ObterPorTokenAsync(token);
+            if (evento == null)
+                return CustomResponse<object>(404, "Evento não encontrado ou não está mais ativo.");
+
+            return CustomResponse(evento);
         }
         catch (Exception ex)
         {

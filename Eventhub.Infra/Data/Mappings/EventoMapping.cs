@@ -45,6 +45,9 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
         builder.Property(e => e.MaxConvidado)
             .IsRequired();
 
+        builder.Property(e => e.TokenConvite)
+            .IsRequired();
+
         // Relacionamentos
         builder.HasOne(e => e.TipoEvento)
             .WithMany(t => t.Eventos)
@@ -90,11 +93,6 @@ public class EventoMapping : IEntityTypeConfiguration<Evento>
         builder.HasMany(e => e.Participantes)
             .WithOne(p => p.Evento)
             .HasForeignKey(p => p.IdEvento)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(e => e.EnviosConvite)
-            .WithOne(ec => ec.Evento)
-            .HasForeignKey(ec => ec.IdEvento)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -11,4 +11,5 @@ public interface IEventoService
     Task<EventoDto?> ObterPorIdAsync(int id);
     Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario);
     Task<IEnumerable<StatusEventoDto>> ObterStatusEventosAsync();
+    Task<EventoAtivoDto?> ObterPorTokenAsync(Guid token);
 }

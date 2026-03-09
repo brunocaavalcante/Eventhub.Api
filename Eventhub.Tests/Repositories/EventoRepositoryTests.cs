@@ -193,4 +193,58 @@ public class EventoRepositoryTests
         evento.Id.Should().Be(eventoId);
         evento.Descricao.Should().Be("Reunião de Trabalho");
     }
+
+    [Fact]
+    public async Task GetEventosByParticipanteUsuarioAsync_DeveRetornarEventosOndeUsuarioParticipa()
+    {
+        // Arrange
+        using var context = CreateInMemoryContext();
+        var idUsuarioParticipante = 2;
+        var idUsuarioCriador = 1;
+
+        // Adiciona entidades relacionadas
+        context.TipoEvento.Add(new TipoEvento { Id = 1, Descricao = "Casamento", IdFoto = 1 });
+        context.StatusEvento.Add(new StatusEvento { Id = 1, Descricao = "Ativo" });
+        context.EnderecoEvento.Add(new EnderecoEvento { Id = 1, Logradouro = "Rua A", Numero = "123", Cep = "12345-678", Cidade = "São Paulo", PontoReferencia = "Centro" });
+        context.Perfis.Add(new Perfil { Id = 9, Descricao = "Convidado" });
+        context.Usuarios.AddRange(
+            new Usuario { Id = idUsuarioCriador, Nome = "João Silva", Email = "joao@email.com", DataCadastro = DateTime.Now, Status = "Ativo" },
+            new Usuario { Id = idUsuarioParticipante, Nome = "Maria Santos", Email = "maria@email.com", DataCadastro = DateTime.Now, Status = "Ativo" }
+        );
+        await context.SaveChangesAsync();
+
+        var hoje = DateTime.Now;
+        context.Eventos.AddRange(
+            // Eventos onde idUsuarioParticipante é participante
+            new Evento { Id = 1, IdUsuarioCriador = idUsuarioCriador, IdTipoEvento = 1, IdStatus = 1, IdEndereco = 1, Descricao = "Evento 1", DataInicio = hoje.AddDays(5), DataFim = hoje.AddDays(6), DataInclusao = hoje, MaxConvidado = 100 },
+            new Evento { Id = 2, IdUsuarioCriador = idUsuarioCriador, IdTipoEvento = 1, IdStatus = 1, IdEndereco = 1, Descricao = "Evento 2", DataInicio = hoje.AddDays(10), DataFim = hoje.AddDays(11), DataInclusao = hoje, MaxConvidado = 50 },
+            // Evento onde idUsuarioParticipante NÃO é participante
+            new Evento { Id = 3, IdUsuarioCriador = idUsuarioCriador, IdTipoEvento = 1, IdStatus = 1, IdEndereco = 1, Descricao = "Evento 3", DataInicio = hoje.AddDays(15), DataFim = hoje.AddDays(16), DataInclusao = hoje, MaxConvidado = 75 }
+        );
+        await context.SaveChangesAsync();
+
+        // Adiciona participantes
+        context.Participantes.AddRange(
+            new Participante { Id = 1, IdEvento = 1, IdUsuario = idUsuarioParticipante, IdPerfil = 9 },
+            new Participante { Id = 2, IdEvento = 2, IdUsuario = idUsuarioParticipante, IdPerfil = 9 }
+        );
+        await context.SaveChangesAsync();
+
+        var repo = new EventoRepository(context);
+
+        // Act
+        var eventos = (await repo.GetEventosByParticipanteUsuarioAsync(idUsuarioParticipante)).ToList();
+
+        // Assert
+        eventos.Should().HaveCount(2);
+        eventos.Should().Contain(e => e.Id == 1);
+        eventos.Should().Contain(e => e.Id == 2);
+        eventos.Should().NotContain(e => e.Id == 3);
+        eventos[0].DataInicio.Should().BeBefore(eventos[1].DataInicio);
+        eventos.Should().AllSatisfy(e =>
+        {
+            e.TipoEvento.Should().NotBeNull();
+            e.Status.Should().NotBeNull();
+        });
+    }
 }

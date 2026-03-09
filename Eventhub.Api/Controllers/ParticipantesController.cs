@@ -2,6 +2,7 @@ using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Enums;
+using Eventhub.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eventhub.Api.Controllers;
@@ -11,20 +12,21 @@ namespace Eventhub.Api.Controllers;
 public class ParticipantesController : BaseController
 {
     private readonly IParticipanteService _participanteService;
-    private readonly IEnvioConviteService _envioConviteService;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ParticipantesController(IParticipanteService participanteService, IEnvioConviteService envioConviteService)
+    public ParticipantesController(IParticipanteService participanteService, IUnitOfWork unitOfWork)
     {
         _participanteService = participanteService;
-        _envioConviteService = envioConviteService;
+        _unitOfWork = unitOfWork;
     }
+
     [HttpGet("evento/{idEvento}/confirmados")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<EnvioConviteDto>>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<ListarConvidadoDto>>), 200)]
     public async Task<IActionResult> ObterConfirmados(int idEvento)
     {
         try
         {
-            var confirmados = await _envioConviteService.GetConfirmadosByEventoAsync(idEvento);
+            var confirmados = await _participanteService.ObterConfirmadosAsync(idEvento);
             return CustomResponse(confirmados);
         }
         catch (Exception ex)
@@ -164,6 +166,63 @@ public class ParticipantesController : BaseController
         }
         catch (Exception ex)
         {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("confirmar-presenca")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> ConfirmarPresenca([FromBody] ConfirmarPresencaDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.ConfirmarPresencaAsync(dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("recusar-convite")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> RecusarConvite([FromBody] RecusarConviteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.RecusarConviteAsync(dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPatch("{idParticipante}/aprovar")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> AprovarPresenca(int idParticipante, [FromBody] AprovarPresencaDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.AprovarPresencaAsync(idParticipante, dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }

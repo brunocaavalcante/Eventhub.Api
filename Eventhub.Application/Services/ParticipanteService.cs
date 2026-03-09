@@ -3,6 +3,7 @@ using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Validations;
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Exceptions;
 using Eventhub.Domain.Interfaces;
 
@@ -12,6 +13,7 @@ public class ParticipanteService : BaseService, IParticipanteService
 {
     private readonly IParticipanteRepository _participanteRepository;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -20,11 +22,13 @@ public class ParticipanteService : BaseService, IParticipanteService
     public ParticipanteService(
         IParticipanteRepository participanteRepository,
         IUsuarioRepository usuarioRepository,
+        IEventoRepository eventoRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _participanteRepository = participanteRepository;
         _usuarioRepository = usuarioRepository;
+        _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -116,9 +120,114 @@ public class ParticipanteService : BaseService, IParticipanteService
         return participante == null ? null : _mapper.Map<ParticipanteDto>(participante);
     }
 
+    public async Task<IEnumerable<ListarConvidadoDto>> ObterConfirmadosAsync(int idEvento)
+    {
+        var confirmados = await _participanteRepository.ObterConfirmadosPorEventoAsync(idEvento);
+        return _mapper.Map<IEnumerable<ListarConvidadoDto>>(confirmados);
+    }
+
+    public async Task<ParticipanteDto> ConfirmarPresencaAsync(ConfirmarPresencaDto dto)
+    {
+        var evento = await _eventoRepository.GetByTokenAsync(dto.TokenEvento)
+            ?? throw new ExceptionValidation("Evento não encontrado.");
+
+        if (evento.IdStatus == (int)EventoStatus.Cancelado || evento.IdStatus == (int)EventoStatus.Concluido)
+            throw new ExceptionValidation("O link deste evento não está mais ativo.");
+
+        var usuario = await _usuarioRepository.GetByEmailAsync(dto.Email)
+            ?? throw new ExceptionValidation("Usuário não encontrado. Realize o cadastro antes de confirmar presença.");
+
+        var participante = await _participanteRepository.GetByUsuarioEventoWithDetailsAsync(usuario.Id, evento.Id);
+        if (participante == null)
+        {
+            participante = new Participante
+            {
+                IdEvento = evento.Id,
+                IdPerfil = (int)EnumPerfil.Convidado,
+                IdUsuario = usuario.Id,
+                Usuario = usuario,
+                CadastroPendente = false,
+                DataCadastro = DateTime.UtcNow
+            };
+            await _participanteRepository.AddAsync(participante);
+        }
+
+        participante.IdStatusConvite = (int)EnumStatusEnvioConvite.Pendente;
+        participante.QtdAcompanhantes = dto.QtdAcompanhantes;
+        participante.MensagemOrganizador = dto.MensagemOrganizador;
+        participante.MotivoRecusa = null;
+        participante.DataResposta = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var salvo = await _participanteRepository.GetByIdWithDetailsAsync(participante.Id) ?? participante;
+        return _mapper.Map<ParticipanteDto>(salvo);
+    }
+
+    public async Task<ParticipanteDto> RecusarConviteAsync(RecusarConviteDto dto)
+    {
+        var evento = await _eventoRepository.GetByTokenAsync(dto.TokenEvento)
+            ?? throw new ExceptionValidation("Evento não encontrado.");
+
+        if (evento.IdStatus == (int)EventoStatus.Cancelado || evento.IdStatus == (int)EventoStatus.Concluido)
+            throw new ExceptionValidation("O link deste evento não está mais ativo.");
+
+        var usuario = await _usuarioRepository.GetByEmailAsync(dto.Email)
+            ?? throw new ExceptionValidation("Usuário não encontrado. Realize o cadastro antes de recusar o convite.");
+
+        var participante = await _participanteRepository.GetByUsuarioEventoWithDetailsAsync(usuario.Id, evento.Id);
+        if (participante == null)
+        {
+            participante = new Participante
+            {
+                IdEvento = evento.Id,
+                IdPerfil = (int)EnumPerfil.Convidado,
+                IdUsuario = usuario.Id,
+                Usuario = usuario,
+                CadastroPendente = false,
+                DataCadastro = DateTime.UtcNow
+            };
+            await _participanteRepository.AddAsync(participante);
+        }
+
+        participante.IdStatusConvite = (int)EnumStatusEnvioConvite.Recusado;
+        participante.QtdAcompanhantes = 0;
+        participante.MotivoRecusa = dto.MotivoRecusa;
+        participante.MensagemOrganizador = null;
+        participante.DataResposta = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var salvo = await _participanteRepository.GetByIdWithDetailsAsync(participante.Id) ?? participante;
+        return _mapper.Map<ParticipanteDto>(salvo);
+    }
+
+    public async Task<ParticipanteDto> AprovarPresencaAsync(int idParticipante, AprovarPresencaDto dto)
+    {
+        var participante = await _participanteRepository.GetByIdWithDetailsAsync(idParticipante)
+            ?? throw new ExceptionValidation("Participante não encontrado.", true);
+
+        if (participante.IdEvento != dto.IdEvento)
+            throw new ExceptionValidation("Participante não pertence ao evento informado.",true);
+
+        var evento = await _eventoRepository.GetByIdAsync(dto.IdEvento)
+            ?? throw new ExceptionValidation("Evento não encontrado.", true);
+
+        var totalConfirmados = await _participanteRepository.ContarConfirmadosAsync(dto.IdEvento);
+        if (totalConfirmados >= evento.MaxConvidado)
+            throw new ExceptionValidation("Limite de convidados do evento atingido.", true);
+
+        participante.IdStatusConvite = (int)EnumStatusEnvioConvite.Confirmado;
+
+        _participanteRepository.Update(participante);
+        await _unitOfWork.SaveChangesAsync();
+
+        var atualizado = await _participanteRepository.GetByIdWithDetailsAsync(participante.Id) ?? participante;
+        return _mapper.Map<ParticipanteDto>(atualizado);
+    }
+
     private async Task<Usuario> ObterOuCriarUsuarioAsync(CreateParticipanteDto participanteDto)
     {
-
         if (string.IsNullOrWhiteSpace(participanteDto.Nome) || string.IsNullOrWhiteSpace(participanteDto.Email))
             throw new ExceptionValidation("Nome e e-mail são obrigatórios para criar um usuário temporário.");
 

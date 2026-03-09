@@ -33,8 +33,19 @@ public class EventoService : BaseService, IEventoService
 
     public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
     {
-        var eventos = await _eventoRepository.GetEventosByUsuarioAsync(idUsuario);
-        return _mapper.Map<IEnumerable<EventoAtivoDto>>(eventos);
+        // Buscar eventos criados pelo usuário
+        var eventosCriados = await _eventoRepository.GetEventosByUsuarioAsync(idUsuario);
+        
+        // Buscar eventos onde o usuário é participante
+        var eventosParticipante = await _eventoRepository.GetEventosByParticipanteUsuarioAsync(idUsuario);
+        
+        // Combinar e remover duplicados (caso usuário seja criador E participante do mesmo evento)
+        var eventosUnificados = eventosCriados
+            .Union(eventosParticipante)
+            .DistinctBy(e => e.Id)
+            .OrderBy(e => e.DataInicio);
+        
+        return _mapper.Map<IEnumerable<EventoAtivoDto>>(eventosUnificados);
     }
 
     public async Task<EventoDto?> ObterPorIdAsync(int id)
@@ -60,6 +71,7 @@ public class EventoService : BaseService, IEventoService
 
         evento.DataInclusao = DateTime.UtcNow;
         evento.IdStatus = (int)EventoStatus.Ativo;
+        evento.TokenConvite = Guid.NewGuid();
 
         await _eventoRepository.AddAsync(evento);
         await _unitOfWork.SaveChangesAsync();
@@ -88,6 +100,17 @@ public class EventoService : BaseService, IEventoService
         }
 
         return eventoDto;
+    }
+
+    public async Task<EventoAtivoDto?> ObterPorTokenAsync(Guid token)
+    {
+        var evento = await _eventoRepository.GetByTokenAsync(token);
+        if (evento == null) return null;
+
+        if (evento.IdStatus == (int)EventoStatus.Cancelado || evento.IdStatus == (int)EventoStatus.Concluido)
+            return null;
+
+        return _mapper.Map<EventoAtivoDto>(evento);
     }
 
     public async Task<Evento> AtualizarAsync(Evento evento)

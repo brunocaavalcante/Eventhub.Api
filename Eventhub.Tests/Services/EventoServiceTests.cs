@@ -234,4 +234,98 @@ public class EventoServiceTests
         await act.Should().ThrowAsync<ExceptionValidation>()
             .WithMessage("*não encontrado*");
     }
+
+    [Fact]
+    public async Task ObterEventosPorUsuarioAsync_DeveRetornarEventosCriadosEParticipacoes_SemDuplicatas()
+    {
+        // Arrange
+        var idUsuario = 1;
+        var hoje = DateTime.Now;
+
+        var eventosCriados = new List<Evento>
+        {
+            new Evento 
+            { 
+                Id = 1, 
+                IdUsuarioCriador = idUsuario, 
+                Nome = "Evento Criado 1",
+                Descricao = "Evento criado pelo usuário",
+                DataInicio = hoje.AddDays(5),
+                DataFim = hoje.AddDays(6),
+                IdTipoEvento = 1,
+                IdStatus = 1,
+                TipoEvento = new TipoEvento { Id = 1, Descricao = "Casamento", IdFoto = 1 },
+                Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
+                Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua A", Numero = "123", Cep = "12345-678", Cidade = "São Paulo" }
+            },
+            new Evento 
+            { 
+                Id = 3, 
+                IdUsuarioCriador = idUsuario, 
+                Nome = "Evento Criado E Participante",
+                Descricao = "Evento criado e participa",
+                DataInicio = hoje.AddDays(15),
+                DataFim = hoje.AddDays(16),
+                IdTipoEvento = 1,
+                IdStatus = 1,
+                TipoEvento = new TipoEvento { Id = 1, Descricao = "Casamento", IdFoto = 1 },
+                Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
+                Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua C", Numero = "789", Cep = "12345-678", Cidade = "São Paulo" }
+            }
+        };
+
+        var eventosParticipante = new List<Evento>
+        {
+            new Evento 
+            { 
+                Id = 2, 
+                IdUsuarioCriador = 2, 
+                Nome = "Evento Participante 1",
+                Descricao = "Evento onde é participante",
+                DataInicio = hoje.AddDays(10),
+                DataFim = hoje.AddDays(11),
+                IdTipoEvento = 1,
+                IdStatus = 1,
+                TipoEvento = new TipoEvento { Id = 1, Descricao = "Festa", IdFoto = 1 },
+                Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
+                Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua B", Numero = "456", Cep = "12345-678", Cidade = "Rio de Janeiro" }
+            },
+            new Evento 
+            { 
+                Id = 3, 
+                IdUsuarioCriador = idUsuario, 
+                Nome = "Evento Criado E Participante",
+                Descricao = "Evento criado e participa",
+                DataInicio = hoje.AddDays(15),
+                DataFim = hoje.AddDays(16),
+                IdTipoEvento = 1,
+                IdStatus = 1,
+                TipoEvento = new TipoEvento { Id = 1, Descricao = "Casamento", IdFoto = 1 },
+                Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
+                Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua C", Numero = "789", Cep = "12345-678", Cidade = "São Paulo" }
+            }
+        };
+
+        _eventoRepositoryMock.Setup(x => x.GetEventosByUsuarioAsync(idUsuario))
+            .ReturnsAsync(eventosCriados);
+        _eventoRepositoryMock.Setup(x => x.GetEventosByParticipanteUsuarioAsync(idUsuario))
+            .ReturnsAsync(eventosParticipante);
+
+        // Act
+        var resultado = (await _eventoService.ObterEventosPorUsuarioAsync(idUsuario)).ToList();
+
+        // Assert
+        resultado.Should().HaveCount(3); // 3 eventos únicos (1 criado, 1 participante, 1 ambos)
+        resultado.Should().Contain(e => e.Id == 1); // Evento criado
+        resultado.Should().Contain(e => e.Id == 2); // Evento participante
+        resultado.Should().Contain(e => e.Id == 3); // Evento criado E participante (sem duplicata)
+        
+        // Verificar ordenação por DataInicio
+        resultado[0].DataInicio.Should().BeBefore(resultado[1].DataInicio);
+        resultado[1].DataInicio.Should().BeBefore(resultado[2].DataInicio);
+        
+        // Verificar que ambos os métodos do repositório foram chamados
+        _eventoRepositoryMock.Verify(x => x.GetEventosByUsuarioAsync(idUsuario), Times.Once);
+        _eventoRepositoryMock.Verify(x => x.GetEventosByParticipanteUsuarioAsync(idUsuario), Times.Once);
+    }
 }

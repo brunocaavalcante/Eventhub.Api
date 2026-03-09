@@ -12,6 +12,7 @@ namespace Eventhub.Tests.Services
     {
         private readonly Mock<IParticipanteRepository> _participanteRepoMock = new();
         private readonly Mock<IUsuarioRepository> _usuarioRepoMock = new();
+        private readonly Mock<IEventoRepository> _eventoRepoMock = new();
         private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
         private readonly ParticipanteService _service;
@@ -21,6 +22,7 @@ namespace Eventhub.Tests.Services
             _service = new ParticipanteService(
                 _participanteRepoMock.Object,
                 _usuarioRepoMock.Object,
+                _eventoRepoMock.Object,
                 _unitOfWorkMock.Object,
                 _mapperMock.Object);
         }

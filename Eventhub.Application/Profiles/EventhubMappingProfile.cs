@@ -35,7 +35,9 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Usuario, opt => opt.MapFrom(src => src.Usuario))
             .ForMember(dest => dest.Perfil, opt => opt.MapFrom(src => src.Perfil))
             .ForMember(dest => dest.CadastroPendente, opt => opt.MapFrom(src => src.CadastroPendente))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status))
+            .ForMember(dest => dest.StatusConvite, opt => opt.MapFrom(src =>
+                src.StatusConvite != null ? src.StatusConvite.Descricao : null));
 
         CreateMap<Participante, ListarConvidadoDto>()
             .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : ""))
@@ -45,10 +47,9 @@ public class EventhubMappingProfile : Profile
                 src.Usuario != null && src.Usuario.Foto != null
                     ? src.Usuario.Foto.Url
                     : string.Empty))
-            .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.EnviosConvite
-                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.QtdAcompanhantes).FirstOrDefault()))
-            .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src => src.EnviosConvite
-                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.StatusEnvioConvite != null ? ev.StatusEnvioConvite.Descricao : null).FirstOrDefault() ?? "PendenteEnvio"));
+            .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.QtdAcompanhantes))
+            .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src =>
+                src.StatusConvite != null ? src.StatusConvite.Descricao : "SemResposta"));
 
         CreateMap<UploadFotoDto, Fotos>().ReverseMap();
         CreateMap<UpdateFotoDto, Fotos>().ReverseMap();
@@ -72,9 +73,6 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();
-
-        CreateMap<Convite, CreateConviteDto>().ReverseMap();
-        CreateMap<Convite, ConviteDto>();
 
         // Presente Mappings
         CreateMap<CreatePresenteDto, Presente>();

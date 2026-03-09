@@ -15,7 +15,6 @@ public class Fotos
     public ICollection<Galeria> Galerias { get; set; } = new List<Galeria>();
     public ICollection<ProgramacaoEvento> Programacoes { get; set; } = new List<ProgramacaoEvento>();
     public ICollection<NotificacaoTipo> NotificacaoTipos { get; set; } = new List<NotificacaoTipo>();
-    public ICollection<Convite> Convites { get; set; } = new List<Convite>();
     public ICollection<ComentarioFoto> Comentarios { get; set; } = new List<ComentarioFoto>();
     public ICollection<CurtidaFoto> Curtidas { get; set; } = new List<CurtidaFoto>();
     public ICollection<ContribuicaoPresente> Contribuicoes { get; set; } = new List<ContribuicaoPresente>();

@@ -5,6 +5,7 @@ public class EventoDto
     public int Id { get; set; }
     public int IdTipoEvento { get; set; }
     public string Nome { get; set; } = string.Empty;
+    public Guid TokenConvite { get; set; }
     public string Descricao { get; set; } = string.Empty;
     public DateTime DataInicio { get; set; }
     public DateTime DataInclusao { get; set; }

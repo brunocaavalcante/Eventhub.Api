@@ -14,6 +14,7 @@ public class EventoAtivoDto
     public DateTime DataInicio { get; set; }
     public DateTime DataFim { get; set; }
     public string? FotoCapaBase64 { get; set; }
+    public EnderecoEventoDto Endereco { get; set; } = null!;
     public string TipoData
     {
         get
