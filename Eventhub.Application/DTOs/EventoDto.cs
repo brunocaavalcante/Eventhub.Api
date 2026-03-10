@@ -12,6 +12,7 @@ public class EventoDto
     public DateTime DataFim { get; set; }
     public int MaxConvidado { get; set; }
     public EnderecoEventoDto Endereco { get; set; } = null!;
+    public ConfiguracaoVisibilidadeDto? ConfiguracaoVisibilidade { get; set; }
 
     public string TipoData
     {

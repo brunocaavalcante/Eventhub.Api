@@ -1,5 +1,6 @@
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Validations;
 using Eventhub.Domain.Entities;
@@ -15,13 +16,17 @@ public class EventoService : BaseService, IEventoService
     private readonly IParticipanteService _participanteService;
     private readonly IEventoRepository _eventoRepository;
     private readonly IStatusEventoRepository _statusEventoRepository;
+    private readonly IPerfilEventoPermissaoService _perfilEventoPermissaoService;
+    private readonly IPerfilRepository _perfilRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public EventoService(IEventoRepository eventoRepository, IUnitOfWork unitOfWork, IMapper mapper,
     IFotosService fotosService,
     IParticipanteService participanteService,
-    IStatusEventoRepository statusEventoRepository)
+    IStatusEventoRepository statusEventoRepository,
+    IPerfilEventoPermissaoService perfilEventoPermissaoService,
+    IPerfilRepository perfilRepository)
     {
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
@@ -29,6 +34,8 @@ public class EventoService : BaseService, IEventoService
         _fotosService = fotosService;
         _participanteService = participanteService;
         _statusEventoRepository = statusEventoRepository;
+        _perfilEventoPermissaoService = perfilEventoPermissaoService;
+        _perfilRepository = perfilRepository;
     }
 
     public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
@@ -91,6 +98,19 @@ public class EventoService : BaseService, IEventoService
             };
 
             evento.Galerias.Add(galeria);
+        }
+
+        // Configurar permissões de visibilidade para convidados
+        if (eventoDto.ConfiguracaoVisibilidade != null)
+        {
+            var perfisAtivos = await _perfilRepository.GetPerfisAtivosAsync();
+            var perfilConvidado = perfisAtivos.FirstOrDefault(p => p.Descricao.Equals("Convidado", StringComparison.OrdinalIgnoreCase));
+            
+            if (perfilConvidado != null)
+            {
+                var permissoes = PermissaoMapper.DtoToPermissoes(eventoDto.ConfiguracaoVisibilidade);
+                await _perfilEventoPermissaoService.ConfigurarPermissoesPerfilAsync(evento.Id, perfilConvidado.Id, permissoes);
+            }
         }
 
         foreach (var participanteDto in eventoDto.Participantes)

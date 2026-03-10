@@ -1,5 +1,6 @@
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Validations;
 using Eventhub.Domain.Entities;
@@ -14,6 +15,7 @@ public class ParticipanteService : BaseService, IParticipanteService
     private readonly IParticipanteRepository _participanteRepository;
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IEventoRepository _eventoRepository;
+    private readonly IParticipantePermissaoService _participantePermissaoService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -23,12 +25,14 @@ public class ParticipanteService : BaseService, IParticipanteService
         IParticipanteRepository participanteRepository,
         IUsuarioRepository usuarioRepository,
         IEventoRepository eventoRepository,
+        IParticipantePermissaoService participantePermissaoService,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _participanteRepository = participanteRepository;
         _usuarioRepository = usuarioRepository;
         _eventoRepository = eventoRepository;
+        _participantePermissaoService = participantePermissaoService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -51,6 +55,13 @@ public class ParticipanteService : BaseService, IParticipanteService
             throw new ExceptionValidation("Participante já vinculado a este evento para o perfil informado.");
 
         ExecutarValidacao(new ParticipanteValidation(), participante);
+
+        // Configurar permissões individuais se fornecidas
+        if (participanteDto.ConfiguracaoVisibilidade != null)
+        {
+            var permissoes = PermissaoMapper.DtoToPermissoes(participanteDto.ConfiguracaoVisibilidade);
+            await _participantePermissaoService.ConfigurarPermissoesParticipanteAsync(participante.Id, permissoes);
+        }
 
         await _participanteRepository.AddAsync(participante);
         await _unitOfWork.SaveChangesAsync();

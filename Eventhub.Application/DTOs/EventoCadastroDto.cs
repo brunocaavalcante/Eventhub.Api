@@ -12,4 +12,5 @@ public class EventoCadastroDto
     public EnderecoEventoDto Endereco { get; set; } = new EnderecoEventoDto();
     public List<UploadFotoDto> Imagens { get; set; } = new();
     public List<CreateParticipanteDto> Participantes { get; set; } = new();
+    public ConfiguracaoVisibilidadeDto? ConfiguracaoVisibilidade { get; set; }
 }

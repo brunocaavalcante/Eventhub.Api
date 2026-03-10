@@ -1,7 +1,9 @@
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +16,18 @@ public class EventosController : BaseController
     private readonly IEventoService _eventoService;
     private readonly IEventoRepository _eventoRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPerfilEventoPermissaoService _perfilEventoPermissaoService;
 
-    public EventosController(IEventoService eventoService, IEventoRepository eventoRepository, IUnitOfWork unitOfWork)
+    public EventosController(
+        IEventoService eventoService, 
+        IEventoRepository eventoRepository, 
+        IUnitOfWork unitOfWork,
+        IPerfilEventoPermissaoService perfilEventoPermissaoService)
     {
         _eventoService = eventoService;
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
+        _perfilEventoPermissaoService = perfilEventoPermissaoService;
     }
 
     [HttpGet("{id}")]
@@ -193,6 +201,54 @@ public class EventosController : BaseController
         }
         catch (Exception ex)
         {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Obtém as permissões padrão de visibilidade do evento (perfil Convidado)
+    /// </summary>
+    [HttpGet("{idEvento}/permissoes-padrao")]
+    [ProducesResponseType(typeof(CustomResponse<ConfiguracaoVisibilidadeDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPermissoesPadrao(int idEvento)
+    {
+        try
+        {
+            // Sempre trabalha com perfil Convidado
+            var idPerfilConvidado = (int)EnumPerfil.Convidado;
+            var permissoes = await _perfilEventoPermissaoService.ObterConfiguracaoPerfilAsync(idEvento, idPerfilConvidado);
+            var configuracao = PermissaoMapper.PermissoesToDto(permissoes);
+            return CustomResponse(configuracao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Atualiza as permissões padrão de visibilidade do evento (perfil Convidado)
+    /// </summary>
+    [HttpPut("{idEvento}/permissoes-padrao")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> AtualizarPermissoesPadrao(int idEvento, [FromBody] ConfiguracaoVisibilidadeDto configuracao)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            // Sempre trabalha com perfil Convidado
+            var idPerfilConvidado = (int)EnumPerfil.Convidado;
+            var permissoes = PermissaoMapper.DtoToPermissoes(configuracao);
+            await _perfilEventoPermissaoService.ConfigurarPermissoesPerfilAsync(idEvento, idPerfilConvidado, permissoes);
+            await _unitOfWork.CommitTransactionAsync();
+            
+            return CustomResponse(new { Mensagem = "Permissões atualizadas com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }

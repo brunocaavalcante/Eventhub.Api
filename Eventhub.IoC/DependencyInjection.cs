@@ -45,6 +45,10 @@ public static class DependencyInjection
         services.AddScoped<IPixEventoRepository, PixEventoRepository>();
         services.AddScoped<IContribuicaoPresenteRepository, ContribuicaoPresenteRepository>();
         services.AddScoped<IStatusPresenteRepository, StatusPresenteRepository>();
+        services.AddScoped<IPermissaoRepository, PermissaoRepository>();
+        services.AddScoped<IPerfilEventoPermissaoRepository, PerfilEventoPermissaoRepository>();
+        services.AddScoped<IParticipantePermissaoRepository, ParticipantePermissaoRepository>();
+        services.AddScoped<IModuloRepository, ModuloRepository>();
 
         // Services
         services.AddScoped<IEventoService, EventoService>();
@@ -61,6 +65,9 @@ public static class DependencyInjection
         services.AddScoped<IPresenteService, PresenteService>();
         services.AddScoped<IPixEventoService, PixEventoService>();
         services.AddScoped<IContribuicaoPresenteService, ContribuicaoPresenteService>();
+        services.AddScoped<IPermissaoEventoService, PermissaoEventoService>();
+        services.AddScoped<IPerfilEventoPermissaoService, PerfilEventoPermissaoService>();
+        services.AddScoped<IParticipantePermissaoService, ParticipantePermissaoService>();
         services.AddSingleton<IImageStorageService, CloudinaryImageStorageService>();
 
         // HttpClient

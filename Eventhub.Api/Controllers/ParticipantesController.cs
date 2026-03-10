@@ -1,5 +1,6 @@
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Enums;
 using Eventhub.Domain.Interfaces;
@@ -13,11 +14,22 @@ public class ParticipantesController : BaseController
 {
     private readonly IParticipanteService _participanteService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IParticipantePermissaoService _participantePermissaoService;
+    private readonly IPermissaoEventoService _permissaoEventoService;
+    private readonly IParticipanteRepository _participanteRepository;
 
-    public ParticipantesController(IParticipanteService participanteService, IUnitOfWork unitOfWork)
+    public ParticipantesController(
+        IParticipanteService participanteService, 
+        IUnitOfWork unitOfWork,
+        IParticipantePermissaoService participantePermissaoService,
+        IPermissaoEventoService permissaoEventoService,
+        IParticipanteRepository participanteRepository)
     {
         _participanteService = participanteService;
         _unitOfWork = unitOfWork;
+        _participantePermissaoService = participantePermissaoService;
+        _permissaoEventoService = permissaoEventoService;
+        _participanteRepository = participanteRepository;
     }
 
     [HttpGet("evento/{idEvento}/confirmados")]
@@ -219,6 +231,76 @@ public class ParticipantesController : BaseController
             var participante = await _participanteService.AprovarPresencaAsync(idParticipante, dto);
             await _unitOfWork.CommitTransactionAsync();
             return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Obtém as permissões efetivas (resolvidas) de um participante
+    /// </summary>
+    [HttpGet("{idParticipante}/permissoes-efetivas")]
+    [ProducesResponseType(typeof(CustomResponse<ConfiguracaoVisibilidadeDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPermissoesEfetivas(int idParticipante)
+    {
+        try
+        {
+            var participante = await _participanteRepository.GetByIdAsync(idParticipante);
+            if (participante == null)
+                return CustomResponse<object>(404, "Participante não encontrado.");
+
+            var permissoes = await _permissaoEventoService.ListarPermissoesEventoAsync(participante.IdUsuario, participante.IdEvento);
+            var configuracao = PermissaoMapper.PermissoesToDto(permissoes);
+            return CustomResponse(configuracao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Obtém apenas os overrides de permissões do participante
+    /// </summary>
+    [HttpGet("{idParticipante}/permissoes-overrides")]
+    [ProducesResponseType(typeof(CustomResponse<ConfiguracaoVisibilidadeDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPermissoesOverrides(int idParticipante)
+    {
+        try
+        {
+            var permissoes = await _participantePermissaoService.ObterPermissoesParticipanteAsync(idParticipante);
+            var configuracao = permissoes.Any() 
+                ? PermissaoMapper.PermissoesToDto(permissoes)
+                : new ConfiguracaoVisibilidadeDto();
+            return CustomResponse(configuracao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Atualiza os overrides de permissões do participante
+    /// </summary>
+    [HttpPut("{idParticipante}/permissoes")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> AtualizarPermissoes(int idParticipante, [FromBody] ConfiguracaoVisibilidadeDto configuracao)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var permissoes = PermissaoMapper.DtoToPermissoes(configuracao);
+            await _participantePermissaoService.ConfigurarPermissoesParticipanteAsync(idParticipante, permissoes);
+            await _unitOfWork.CommitTransactionAsync();
+            
+            return CustomResponse(new { Mensagem = "Permissões atualizadas com sucesso." });
         }
         catch (Exception ex)
         {

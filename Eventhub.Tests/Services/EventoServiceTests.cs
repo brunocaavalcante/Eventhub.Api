@@ -20,6 +20,8 @@ public class EventoServiceTests
     private readonly Mock<IParticipanteService> _participanteService;
     private readonly Mock<IStatusEventoRepository> _statusEventoRepositoryMock;
     private readonly IMapper _mapper;
+    private readonly Mock<IPerfilEventoPermissaoService> _perfilEventoPermissaoServiceMock;
+    private readonly Mock<IPerfilRepository> _perfilRepositoryMock;
 
     public EventoServiceTests()
     {
@@ -28,8 +30,11 @@ public class EventoServiceTests
         _fotoService = new Mock<IFotosService>();
         _participanteService = new Mock<IParticipanteService>();
         _statusEventoRepositoryMock = new Mock<IStatusEventoRepository>();
+        _perfilEventoPermissaoServiceMock = new Mock<IPerfilEventoPermissaoService>();
+        _perfilRepositoryMock = new Mock<IPerfilRepository>();
         _mapper = AutoMapperHelper.CreateMapper();
-        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object, _mapper, _fotoService.Object, _participanteService.Object, _statusEventoRepositoryMock.Object);
+
+        _eventoService = new EventoService(_eventoRepositoryMock.Object, _unitOfWorkMock.Object, _mapper, _fotoService.Object, _participanteService.Object, _statusEventoRepositoryMock.Object, _perfilEventoPermissaoServiceMock.Object, _perfilRepositoryMock.Object);
     }
 
     [Fact]
