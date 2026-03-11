@@ -1,5 +1,6 @@
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.DTOs.Evento;
 using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Application.Validations;
@@ -133,12 +134,18 @@ public class EventoService : BaseService, IEventoService
         return _mapper.Map<EventoAtivoDto>(evento);
     }
 
-    public async Task<Evento> AtualizarAsync(Evento evento)
+    public async Task<EventoDto> AtualizarAsync(UpdateEventoDto evento)
     {
-        ExecutarValidacao(new EventoValidation(), evento);
-        _eventoRepository.Update(evento);
-        await _unitOfWork.CommitTransactionAsync();
-        return evento;
+        ExecutarValidacao(new UpdateEventoValidation(), evento);
+        var eventoExistente = await _eventoRepository.GetByIdAsync(evento.Id);
+        
+        if (eventoExistente == null)
+            throw new ExceptionValidation("Evento não encontrado.");
+            
+        _mapper.Map(evento, eventoExistente);
+
+        await _eventoRepository.UpdateAsync(eventoExistente);
+        return _mapper.Map<EventoDto>(eventoExistente);
     }
 
     public async Task RemoverAsync(int id)

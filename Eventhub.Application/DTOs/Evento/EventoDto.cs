@@ -10,6 +10,7 @@ public class EventoDto
     public DateTime DataInicio { get; set; }
     public DateTime DataInclusao { get; set; }
     public DateTime DataFim { get; set; }
+    public StatusEventoDto Status { get; set; } = null!;
     public int MaxConvidado { get; set; }
     public EnderecoEventoDto Endereco { get; set; } = null!;
     public ConfiguracaoVisibilidadeDto? ConfiguracaoVisibilidade { get; set; }

@@ -169,32 +169,152 @@ public class EventoServiceTests
     public async Task AtualizarAsync_DeveAtualizarEvento_QuandoDadosValidos()
     {
         // Arrange
-        var evento = new Evento
+        var eventoDto = new Eventhub.Application.DTOs.Evento.UpdateEventoDto
+        {
+            Id = 1,
+            Nome = "Evento Teste Atualizado",
+            Descricao = "Descrição atualizada",
+            IdTipoEvento = 1,
+            MaxConvidado = 150,
+            DataInicio = DateTime.Now.AddDays(1),
+            DataFim = DateTime.Now.AddDays(2),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Atualizada",
+                Numero = "456",
+                Cidade = "Cidade Teste",
+                Cep = "98765-432"
+            },
+            Imagens = new()
+        };
+
+        var eventoExistente = new Evento
         {
             Id = 1,
             IdTipoEvento = 1,
             IdStatus = 1,
             IdEndereco = 1,
             IdUsuarioCriador = 1,
-            DataInicio = DateTime.Now.AddDays(1),
-            DataFim = DateTime.Now.AddDays(2),
+            DataInicio = DateTime.Now,
+            DataFim = DateTime.Now.AddDays(1),
             Nome = "Evento Teste",
-            Descricao = "Descrição atualizada",
-            MaxConvidado = 150,
+            Descricao = "Descrição antiga",
+            MaxConvidado = 100,
             DataInclusao = DateTime.Now
         };
 
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
+        _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoDto.Id))
+            .ReturnsAsync(eventoExistente);
+        _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        var resultado = await _eventoService.AtualizarAsync(evento);
+        var resultado = await _eventoService.AtualizarAsync(eventoDto);
 
         // Assert
         resultado.Should().NotBeNull();
         resultado.Descricao.Should().Be("Descrição atualizada");
-        _eventoRepositoryMock.Verify(x => x.Update(It.IsAny<Evento>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        resultado.Nome.Should().Be("Evento Teste Atualizado");
+        _eventoRepositoryMock.Verify(x => x.GetByIdAsync(eventoDto.Id), Times.Once);
+        _eventoRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Evento>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_DeveLancarExcecao_QuandoEventoNaoEncontrado()
+    {
+        // Arrange
+        var eventoDto = new Eventhub.Application.DTOs.Evento.UpdateEventoDto
+        {
+            Id = 999,
+            Nome = "Evento Teste",
+            Descricao = "Descrição",
+            IdTipoEvento = 1,
+            MaxConvidado = 100,
+            DataInicio = DateTime.Now.AddDays(1),
+            DataFim = DateTime.Now.AddDays(2),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
+            Imagens = new()
+        };
+
+        _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoDto.Id))
+            .ReturnsAsync((Evento?)null);
+
+        // Act
+        Func<Task> act = async () => await _eventoService.AtualizarAsync(eventoDto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*não encontrado*");
+        _eventoRepositoryMock.Verify(x => x.GetByIdAsync(eventoDto.Id), Times.Once);
+        _eventoRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Evento>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_DeveLancarExcecao_QuandoDataFimMenorQueDataInicio()
+    {
+        // Arrange
+        var eventoDto = new Eventhub.Application.DTOs.Evento.UpdateEventoDto
+        {
+            Id = 1,
+            Nome = "Evento Teste",
+            Descricao = "Descrição",
+            IdTipoEvento = 1,
+            MaxConvidado = 100,
+            DataInicio = DateTime.Now.AddDays(2),
+            DataFim = DateTime.Now.AddDays(1), // Data fim menor que início
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
+            Imagens = new()
+        };
+
+        // Act
+        Func<Task> act = async () => await _eventoService.AtualizarAsync(eventoDto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*data de término*posterior*");
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_DeveLancarExcecao_QuandoNomeVazio()
+    {
+        // Arrange
+        var eventoDto = new Eventhub.Application.DTOs.Evento.UpdateEventoDto
+        {
+            Id = 1,
+            Nome = "", // Nome vazio
+            Descricao = "Descrição",
+            IdTipoEvento = 1,
+            MaxConvidado = 100,
+            DataInicio = DateTime.Now.AddDays(1),
+            DataFim = DateTime.Now.AddDays(2),
+            Endereco = new EnderecoEventoDto
+            {
+                Logradouro = "Rua Teste",
+                Numero = "123",
+                Cidade = "Cidade Teste",
+                Cep = "12345-678"
+            },
+            Imagens = new()
+        };
+
+        // Act
+        Func<Task> act = async () => await _eventoService.AtualizarAsync(eventoDto);
+
+        // Assert
+        await act.Should().ThrowAsync<ExceptionValidation>()
+            .WithMessage("*nome*obrigatório*");
     }
 
     [Fact]

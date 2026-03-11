@@ -1,5 +1,6 @@
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.DTOs.Evento;
 using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Entities;
@@ -19,8 +20,8 @@ public class EventosController : BaseController
     private readonly IPerfilEventoPermissaoService _perfilEventoPermissaoService;
 
     public EventosController(
-        IEventoService eventoService, 
-        IEventoRepository eventoRepository, 
+        IEventoService eventoService,
+        IEventoRepository eventoRepository,
         IUnitOfWork unitOfWork,
         IPerfilEventoPermissaoService perfilEventoPermissaoService)
     {
@@ -134,7 +135,7 @@ public class EventosController : BaseController
             await _unitOfWork.BeginTransactionAsync();
             var eventoCreated = await _eventoService.AdicionarAsync(evento);
             await _unitOfWork.CommitTransactionAsync();
-            
+
             return CustomResponse(eventoCreated, 201);
         }
         catch (Exception ex)
@@ -148,21 +149,25 @@ public class EventosController : BaseController
     /// Atualiza um evento existente
     /// </summary>
     [HttpPut("{id}")]
-    [ProducesResponseType(typeof(CustomResponse<Evento>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<EventoDto>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
-    public async Task<IActionResult> Atualizar(int id, [FromBody] Evento evento)
+    public async Task<IActionResult> Atualizar(int id, [FromBody] UpdateEventoDto evento)
     {
         try
         {
             if (id != evento.Id)
                 return CustomResponse<object>(400, "ID do evento não corresponde.");
 
+            await _unitOfWork.BeginTransactionAsync();
             var eventoAtualizado = await _eventoService.AtualizarAsync(evento);
+            await _unitOfWork.CommitTransactionAsync();
+            
             return CustomResponse(eventoAtualizado);
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }
@@ -243,7 +248,7 @@ public class EventosController : BaseController
             var permissoes = PermissaoMapper.DtoToPermissoes(configuracao);
             await _perfilEventoPermissaoService.ConfigurarPermissoesPerfilAsync(idEvento, idPerfilConvidado, permissoes);
             await _unitOfWork.CommitTransactionAsync();
-            
+
             return CustomResponse(new { Mensagem = "Permissões atualizadas com sucesso." });
         }
         catch (Exception ex)

@@ -1,6 +1,7 @@
 using System.Linq;
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.DTOs.Evento;
 using Eventhub.Domain.Entities;
 
 namespace Eventhub.Application.Profiles;
@@ -70,6 +71,9 @@ public class EventhubMappingProfile : Profile
 
         CreateMap<Evento, EventoDto>()
             .ForMember(dest => dest.IdTipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Id))
+            .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
+        
+        CreateMap<UpdateEventoDto, Evento>()
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();
