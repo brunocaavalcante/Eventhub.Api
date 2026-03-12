@@ -257,4 +257,66 @@ public class EventosController : BaseController
             return TratarErros(ex);
         }
     }
+
+    /// <summary>
+    /// Cancela um evento
+    /// </summary>
+    /// <remarks>
+    /// Cancela o evento e executa as seguintes ações:
+    /// - Bloqueia se houver contribuições confirmadas ou em análise
+    /// - Cancela automaticamente contribuições pendentes
+    /// - Libera reservas de presentes
+    /// - Altera status do evento para Cancelado
+    /// </remarks>
+    [HttpPatch("{id}/cancelar")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> CancelarEvento(int id)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            await _eventoService.CancelarEventoAsync(id);
+            await _unitOfWork.CommitTransactionAsync();
+
+            return CustomResponse(new { Mensagem = "Evento cancelado com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Reativa um evento cancelado
+    /// </summary>
+    /// <remarks>
+    /// Reativa um evento que foi cancelado, com as seguintes validações:
+    /// - Apenas eventos cancelados podem ser reativados
+    /// - Data do evento não pode ter passado
+    /// - Não pode ter contribuições estornadas
+    /// - Status volta para Agendado ou Ativo conforme a data
+    /// </remarks>
+    [HttpPatch("{id}/reativar")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ReativarEvento(int id)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            await _eventoService.ReativarEventoAsync(id);
+            await _unitOfWork.CommitTransactionAsync();
+
+            return CustomResponse(new { Mensagem = "Evento reativado com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
 }

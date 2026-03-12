@@ -19,6 +19,8 @@ public class EventoService : BaseService, IEventoService
     private readonly IStatusEventoRepository _statusEventoRepository;
     private readonly IPerfilEventoPermissaoService _perfilEventoPermissaoService;
     private readonly IPerfilRepository _perfilRepository;
+    private readonly IPresenteRepository _presenteRepository;
+    private readonly IContribuicaoPresenteRepository _contribuicaoPresenteRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -27,7 +29,9 @@ public class EventoService : BaseService, IEventoService
     IParticipanteService participanteService,
     IStatusEventoRepository statusEventoRepository,
     IPerfilEventoPermissaoService perfilEventoPermissaoService,
-    IPerfilRepository perfilRepository)
+    IPerfilRepository perfilRepository,
+    IPresenteRepository presenteRepository,
+    IContribuicaoPresenteRepository contribuicaoPresenteRepository)
     {
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
@@ -37,6 +41,8 @@ public class EventoService : BaseService, IEventoService
         _statusEventoRepository = statusEventoRepository;
         _perfilEventoPermissaoService = perfilEventoPermissaoService;
         _perfilRepository = perfilRepository;
+        _presenteRepository = presenteRepository;
+        _contribuicaoPresenteRepository = contribuicaoPresenteRepository;
     }
 
     public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
@@ -156,5 +162,118 @@ public class EventoService : BaseService, IEventoService
 
         _eventoRepository.Remove(evento);
         await _unitOfWork.CommitTransactionAsync();
+    }
+
+    public async Task CancelarEventoAsync(int id)
+    {
+        var evento = await _eventoRepository.GetByIdAsync(id);
+        if (evento == null)
+            throw new ExceptionValidation("Evento não encontrado.");
+
+        if (evento.IdStatus == (int)EventoStatus.Cancelado) 
+            throw new ExceptionValidation("O evento já está cancelado.", true);
+
+        if (evento.IdStatus == (int)EventoStatus.Concluido)
+            throw new ExceptionValidation("Não é possível cancelar um evento que já foi concluído.", true);
+
+        // Buscar presentes do evento com suas contribuições
+        var presentes = await _presenteRepository.GetByEventIdAsync(id);
+        var presentesIds = presentes.Select(p => p.Id).ToList();
+
+        // Se não houver presentes, não há contribuições a verificar
+        if (presentesIds.Any())
+        {
+            // Verificar contribuições confirmadas
+            var contribuicoesConfirmadas = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Confirmado);
+
+            if (contribuicoesConfirmadas.Any())
+            {
+                throw new ExceptionValidation(
+                    $"Não é possível cancelar o evento. Existem {contribuicoesConfirmadas.Count()} contribuição(ões) confirmada(s) que precisam ser estornadas primeiro.", true);
+            }
+
+            // Verificar contribuições em análise
+            var contribuicoesEmAnalise = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.EmAnalise);
+
+            if (contribuicoesEmAnalise.Any())
+            {
+                throw new ExceptionValidation(
+                    $"Não é possível cancelar o evento. Existem {contribuicoesEmAnalise.Count()} contribuição(ões) em análise que precisam ser resolvidas primeiro.", true);
+            }
+
+            // Cancelar contribuições pendentes
+            var contribuicoesPendentes = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Pendente);
+
+            foreach (var contribuicao in contribuicoesPendentes)
+            {
+                contribuicao.IdStatusContribuicao = (int)StatusContribuicaoEnum.Cancelado;
+                contribuicao.Justificativa = "Contribuição cancelada automaticamente devido ao cancelamento do evento.";
+                await _contribuicaoPresenteRepository.UpdateAsync(contribuicao);
+            }
+
+            // Liberar reservas de presentes
+            var presentesReservados = presentes.Where(p => p.IdStatus == (int)StatusPresenteEnum.Reservado);
+            foreach (var presente in presentesReservados)
+            {
+                presente.IdStatus = (int)StatusPresenteEnum.Disponivel;
+                presente.IdParticipanteReservou = null;
+                presente.DataReserva = null;
+                await _presenteRepository.UpdateAsync(presente);
+            }
+        }
+
+        // Atualizar status do evento
+        evento.IdStatus = (int)EventoStatus.Cancelado;
+        await _eventoRepository.UpdateAsync(evento);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ReativarEventoAsync(int id)
+    {
+        var evento = await _eventoRepository.GetByIdAsync(id);
+        if (evento == null)
+            throw new ExceptionValidation("Evento não encontrado.");
+
+        // Validação: Apenas eventos cancelados podem ser reativados
+        if (evento.IdStatus != (int)EventoStatus.Cancelado)
+            throw new ExceptionValidation("Apenas eventos cancelados podem ser reativados.");
+
+        // Validação: Evento não pode ter terminado
+        if (evento.DataFim < DateTime.UtcNow)
+            throw new ExceptionValidation("Não é possível reativar um evento que já foi concluído.");
+
+        // Buscar presentes do evento com suas contribuições
+        var presentes = await _presenteRepository.GetByEventIdAsync(id);
+        var presentesIds = presentes.Select(p => p.Id).ToList();
+
+        // Se houver presentes, verificar contribuições estornadas
+        if (presentesIds.Any())
+        {
+            var contribuicoesEstornadas = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Estornado);
+
+            if (contribuicoesEstornadas.Any())
+            {
+                throw new ExceptionValidation(
+                    $"Não é possível reativar o evento. Existem {contribuicoesEstornadas.Count()} contribuição(ões) já estornada(s). Questões financeiras já foram resolvidas.");
+            }
+        }
+
+        // Determinar o novo status baseado na data
+        var novoStatus = evento.DataInicio > DateTime.UtcNow 
+            ? (int)EventoStatus.Agendado 
+            : (int)EventoStatus.Ativo;
+
+        // Atualizar status do evento
+        evento.IdStatus = novoStatus;
+        await _eventoRepository.UpdateAsync(evento);
+        await _unitOfWork.SaveChangesAsync();
     }
 }
