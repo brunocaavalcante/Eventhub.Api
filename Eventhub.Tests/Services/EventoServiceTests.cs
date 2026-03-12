@@ -5,6 +5,7 @@ using Eventhub.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.DTOs.Evento;
 using Eventhub.Application.Interfaces;
 using AutoMapper;
 using Eventhub.Tests.Helpers;
@@ -24,6 +25,8 @@ public class EventoServiceTests
     private readonly Mock<IPerfilRepository> _perfilRepositoryMock;
     private readonly Mock<IPresenteRepository> _presenteRepositoryMock;
     private readonly Mock<IContribuicaoPresenteRepository> _contribuicaoPresenteRepositoryMock;
+    private readonly Mock<IParticipanteRepository> _participanteRepositoryMock;
+    private readonly Mock<INotificacaoRepository> _notificacaoRepositoryMock;
 
     public EventoServiceTests()
     {
@@ -36,19 +39,23 @@ public class EventoServiceTests
         _perfilRepositoryMock = new Mock<IPerfilRepository>();
         _presenteRepositoryMock = new Mock<IPresenteRepository>();
         _contribuicaoPresenteRepositoryMock = new Mock<IContribuicaoPresenteRepository>();
+        _participanteRepositoryMock = new Mock<IParticipanteRepository>();
+        _notificacaoRepositoryMock = new Mock<INotificacaoRepository>();
         _mapper = AutoMapperHelper.CreateMapper();
 
         _eventoService = new EventoService(
-            _eventoRepositoryMock.Object, 
-            _unitOfWorkMock.Object, 
-            _mapper, 
-            _fotoService.Object, 
-            _participanteService.Object, 
-            _statusEventoRepositoryMock.Object, 
-            _perfilEventoPermissaoServiceMock.Object, 
+            _eventoRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _mapper,
+            _fotoService.Object,
+            _participanteService.Object,
+            _statusEventoRepositoryMock.Object,
+            _perfilEventoPermissaoServiceMock.Object,
             _perfilRepositoryMock.Object,
             _presenteRepositoryMock.Object,
-            _contribuicaoPresenteRepositoryMock.Object);
+            _contribuicaoPresenteRepositoryMock.Object,
+            _participanteRepositoryMock.Object,
+            _notificacaoRepositoryMock.Object);
     }
 
     [Fact]
@@ -383,10 +390,10 @@ public class EventoServiceTests
 
         var eventosCriados = new List<Evento>
         {
-            new Evento 
-            { 
-                Id = 1, 
-                IdUsuarioCriador = idUsuario, 
+            new Evento
+            {
+                Id = 1,
+                IdUsuarioCriador = idUsuario,
                 Nome = "Evento Criado 1",
                 Descricao = "Evento criado pelo usuário",
                 DataInicio = hoje.AddDays(5),
@@ -397,10 +404,10 @@ public class EventoServiceTests
                 Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
                 Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua A", Numero = "123", Cep = "12345-678", Cidade = "São Paulo" }
             },
-            new Evento 
-            { 
-                Id = 3, 
-                IdUsuarioCriador = idUsuario, 
+            new Evento
+            {
+                Id = 3,
+                IdUsuarioCriador = idUsuario,
                 Nome = "Evento Criado E Participante",
                 Descricao = "Evento criado e participa",
                 DataInicio = hoje.AddDays(15),
@@ -415,10 +422,10 @@ public class EventoServiceTests
 
         var eventosParticipante = new List<Evento>
         {
-            new Evento 
-            { 
-                Id = 2, 
-                IdUsuarioCriador = 2, 
+            new Evento
+            {
+                Id = 2,
+                IdUsuarioCriador = 2,
                 Nome = "Evento Participante 1",
                 Descricao = "Evento onde é participante",
                 DataInicio = hoje.AddDays(10),
@@ -429,10 +436,10 @@ public class EventoServiceTests
                 Status = new StatusEvento { Id = 1, Descricao = "Ativo" },
                 Endereco = new EnderecoEvento { Id = 1, Logradouro = "Rua B", Numero = "456", Cep = "12345-678", Cidade = "Rio de Janeiro" }
             },
-            new Evento 
-            { 
-                Id = 3, 
-                IdUsuarioCriador = idUsuario, 
+            new Evento
+            {
+                Id = 3,
+                IdUsuarioCriador = idUsuario,
                 Nome = "Evento Criado E Participante",
                 Descricao = "Evento criado e participa",
                 DataInicio = hoje.AddDays(15),
@@ -458,11 +465,11 @@ public class EventoServiceTests
         resultado.Should().Contain(e => e.Id == 1); // Evento criado
         resultado.Should().Contain(e => e.Id == 2); // Evento participante
         resultado.Should().Contain(e => e.Id == 3); // Evento criado E participante (sem duplicata)
-        
+
         // Verificar ordenação por DataInicio
         resultado[0].DataInicio.Should().BeBefore(resultado[1].DataInicio);
         resultado[1].DataInicio.Should().BeBefore(resultado[2].DataInicio);
-        
+
         // Verificar que ambos os métodos do repositório foram chamados
         _eventoRepositoryMock.Verify(x => x.GetEventosByUsuarioAsync(idUsuario), Times.Once);
         _eventoRepositoryMock.Verify(x => x.GetEventosByParticipanteUsuarioAsync(idUsuario), Times.Once);
@@ -487,13 +494,19 @@ public class EventoServiceTests
             .ReturnsAsync(evento);
         _presenteRepositoryMock.Setup(x => x.GetByEventIdAsync(eventoId))
             .ReturnsAsync(new List<Presente>());
+        _participanteRepositoryMock.Setup(x => x.GetByEventoAsync(eventoId))
+            .ReturnsAsync(new List<Participante>());
+        _notificacaoRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Notificacao>()))
+            .Returns(Task.CompletedTask);
         _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
             .ReturnsAsync(1);
 
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento do evento" };
+
         // Act
-        await _eventoService.CancelarEventoAsync(eventoId);
+        await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         evento.IdStatus.Should().Be(4); // Cancelado
@@ -506,11 +519,12 @@ public class EventoServiceTests
     {
         // Arrange
         var eventoId = 999;
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento" };
         _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId))
             .ReturnsAsync((Evento?)null);
 
         // Act
-        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId);
+        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
@@ -528,12 +542,13 @@ public class EventoServiceTests
             Nome = "Evento Teste",
             IdStatus = 4 // Já cancelado
         };
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento" };
 
         _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId))
             .ReturnsAsync(evento);
 
         // Act
-        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId);
+        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
@@ -555,8 +570,10 @@ public class EventoServiceTests
         _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId))
             .ReturnsAsync(evento);
 
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento" };
+
         // Act
-        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId);
+        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
@@ -592,8 +609,10 @@ public class EventoServiceTests
         _contribuicaoPresenteRepositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<ContribuicaoPresente, bool>>>()))
             .ReturnsAsync(contribuicoesConfirmadas);
 
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento" };
+
         // Act
-        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId);
+        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
@@ -626,7 +645,7 @@ public class EventoServiceTests
             .ReturnsAsync(evento);
         _presenteRepositoryMock.Setup(x => x.GetByEventIdAsync(eventoId))
             .ReturnsAsync(presentes);
-        
+
         // Setup para retornar lista vazia primeiro (confirmadas) e depois as em análise
         var callCount = 0;
         _contribuicaoPresenteRepositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<ContribuicaoPresente, bool>>>()))
@@ -636,8 +655,10 @@ public class EventoServiceTests
                 return callCount == 1 ? new List<ContribuicaoPresente>() : contribuicoesEmAnalise;
             });
 
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento" };
+
         // Act
-        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId);
+        Func<Task> act = async () => await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
@@ -670,7 +691,7 @@ public class EventoServiceTests
             .ReturnsAsync(evento);
         _presenteRepositoryMock.Setup(x => x.GetByEventIdAsync(eventoId))
             .ReturnsAsync(presentes);
-        
+
         var callCount = 0;
         _contribuicaoPresenteRepositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<ContribuicaoPresente, bool>>>()))
             .ReturnsAsync(() =>
@@ -678,18 +699,24 @@ public class EventoServiceTests
                 callCount++;
                 return callCount <= 2 ? new List<ContribuicaoPresente>() : contribuicoesPendentes;
             });
-        
+
         _contribuicaoPresenteRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<ContribuicaoPresente>()))
             .Returns(Task.CompletedTask);
         _presenteRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Presente>()))
+            .Returns(Task.CompletedTask);
+        _participanteRepositoryMock.Setup(x => x.GetByEventoAsync(eventoId))
+            .ReturnsAsync(new List<Participante>());
+        _notificacaoRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Notificacao>()))
             .Returns(Task.CompletedTask);
         _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
             .ReturnsAsync(1);
 
+        var dto = new CancelarEventoDto { Justificativa = "Motivo do cancelamento do evento" };
+
         // Act
-        await _eventoService.CancelarEventoAsync(eventoId);
+        await _eventoService.CancelarEventoAsync(eventoId, dto);
 
         // Assert
         evento.IdStatus.Should().Be(4); // Cancelado

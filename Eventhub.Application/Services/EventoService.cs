@@ -21,6 +21,8 @@ public class EventoService : BaseService, IEventoService
     private readonly IPerfilRepository _perfilRepository;
     private readonly IPresenteRepository _presenteRepository;
     private readonly IContribuicaoPresenteRepository _contribuicaoPresenteRepository;
+    private readonly IParticipanteRepository _participanteRepository;
+    private readonly INotificacaoRepository _notificacaoRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -31,7 +33,9 @@ public class EventoService : BaseService, IEventoService
     IPerfilEventoPermissaoService perfilEventoPermissaoService,
     IPerfilRepository perfilRepository,
     IPresenteRepository presenteRepository,
-    IContribuicaoPresenteRepository contribuicaoPresenteRepository)
+    IContribuicaoPresenteRepository contribuicaoPresenteRepository,
+    IParticipanteRepository participanteRepository,
+    INotificacaoRepository notificacaoRepository)
     {
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
@@ -43,6 +47,8 @@ public class EventoService : BaseService, IEventoService
         _perfilRepository = perfilRepository;
         _presenteRepository = presenteRepository;
         _contribuicaoPresenteRepository = contribuicaoPresenteRepository;
+        _participanteRepository = participanteRepository;
+        _notificacaoRepository = notificacaoRepository;
     }
 
     public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
@@ -164,8 +170,11 @@ public class EventoService : BaseService, IEventoService
         await _unitOfWork.CommitTransactionAsync();
     }
 
-    public async Task CancelarEventoAsync(int id)
+    public async Task CancelarEventoAsync(int id, CancelarEventoDto dto)
     {
+        // Validar justificativa
+        ExecutarValidacao(new CancelarEventoValidation(), dto);
+
         var evento = await _eventoRepository.GetByIdAsync(id);
         if (evento == null)
             throw new ExceptionValidation("Evento não encontrado.");
@@ -231,7 +240,34 @@ public class EventoService : BaseService, IEventoService
         // Atualizar status do evento
         evento.IdStatus = (int)EventoStatus.Cancelado;
         await _eventoRepository.UpdateAsync(evento);
+
+        // Enviar notificações para todos os participantes
+        var participantes = await _participanteRepository.GetByEventoAsync(id);
+        foreach (var participante in participantes)
+        {
+            var notificacao = new Notificacao
+            {
+                IdEvento = evento.Id,
+                IdUsuarioOrigem = evento.IdUsuarioCriador,
+                IdUsuarioDestino = participante.IdUsuario,
+                Data = DateTime.UtcNow,
+                Titulo = "Evento Cancelado",
+                Descricao = $"O evento '{evento.Nome}' foi cancelado. Motivo: {dto.Justificativa}",
+                LinkAcao = $"/eventos/{evento.Id}",
+                Icone = "cancel",
+                Status = "NaoLida",
+                Prioridade = 1,
+                DataCadastro = DateTime.UtcNow,
+                DataEnvio = DateTime.UtcNow
+            };
+
+            await _notificacaoRepository.AddAsync(notificacao);
+        }
+
         await _unitOfWork.SaveChangesAsync();
+        
+        // TODO: Implementar envio de email para os participantes
+        // O email deve conter o nome do evento e a justificativa do cancelamento
     }
 
     public async Task ReativarEventoAsync(int id)

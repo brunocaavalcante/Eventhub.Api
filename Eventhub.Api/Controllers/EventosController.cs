@@ -267,20 +267,21 @@ public class EventosController : BaseController
     /// - Cancela automaticamente contribuições pendentes
     /// - Libera reservas de presentes
     /// - Altera status do evento para Cancelado
+    /// - Envia notificações para todos os participantes com a justificativa
     /// </remarks>
     [HttpPatch("{id}/cancelar")]
     [ProducesResponseType(typeof(CustomResponse<object>), 200)]
     [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
-    public async Task<IActionResult> CancelarEvento(int id)
+    public async Task<IActionResult> CancelarEvento(int id, [FromBody] CancelarEventoDto dto)
     {
         try
         {
             await _unitOfWork.BeginTransactionAsync();
-            await _eventoService.CancelarEventoAsync(id);
+            await _eventoService.CancelarEventoAsync(id, dto);
             await _unitOfWork.CommitTransactionAsync();
 
-            return CustomResponse(new { Mensagem = "Evento cancelado com sucesso." });
+            return CustomResponse(new { Mensagem = "Evento cancelado com sucesso. Notificações enviadas aos participantes." });
         }
         catch (Exception ex)
         {
