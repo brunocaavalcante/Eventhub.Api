@@ -23,6 +23,8 @@ public class EventoService : BaseService, IEventoService
     private readonly IContribuicaoPresenteRepository _contribuicaoPresenteRepository;
     private readonly IParticipanteRepository _participanteRepository;
     private readonly INotificacaoRepository _notificacaoRepository;
+    private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -35,7 +37,9 @@ public class EventoService : BaseService, IEventoService
     IPresenteRepository presenteRepository,
     IContribuicaoPresenteRepository contribuicaoPresenteRepository,
     IParticipanteRepository participanteRepository,
-    INotificacaoRepository notificacaoRepository)
+    INotificacaoRepository notificacaoRepository,
+    IUsuarioRepository usuarioRepository,
+    IEmailService emailService)
     {
         _eventoRepository = eventoRepository;
         _unitOfWork = unitOfWork;
@@ -49,22 +53,24 @@ public class EventoService : BaseService, IEventoService
         _contribuicaoPresenteRepository = contribuicaoPresenteRepository;
         _participanteRepository = participanteRepository;
         _notificacaoRepository = notificacaoRepository;
+        _usuarioRepository = usuarioRepository;
+        _emailService = emailService;
     }
 
     public async Task<IEnumerable<EventoAtivoDto>> ObterEventosPorUsuarioAsync(int idUsuario)
     {
         // Buscar eventos criados pelo usuário
         var eventosCriados = await _eventoRepository.GetEventosByUsuarioAsync(idUsuario);
-        
+
         // Buscar eventos onde o usuário é participante
         var eventosParticipante = await _eventoRepository.GetEventosByParticipanteUsuarioAsync(idUsuario);
-        
+
         // Combinar e remover duplicados (caso usuário seja criador E participante do mesmo evento)
         var eventosUnificados = eventosCriados
             .Union(eventosParticipante)
             .DistinctBy(e => e.Id)
             .OrderBy(e => e.DataInicio);
-        
+
         return _mapper.Map<IEnumerable<EventoAtivoDto>>(eventosUnificados);
     }
 
@@ -118,7 +124,7 @@ public class EventoService : BaseService, IEventoService
         {
             var perfisAtivos = await _perfilRepository.GetPerfisAtivosAsync();
             var perfilConvidado = perfisAtivos.FirstOrDefault(p => p.Descricao.Equals("Convidado", StringComparison.OrdinalIgnoreCase));
-            
+
             if (perfilConvidado != null)
             {
                 var permissoes = PermissaoMapper.DtoToPermissoes(eventoDto.ConfiguracaoVisibilidade);
@@ -150,10 +156,10 @@ public class EventoService : BaseService, IEventoService
     {
         ExecutarValidacao(new UpdateEventoValidation(), evento);
         var eventoExistente = await _eventoRepository.GetByIdAsync(evento.Id);
-        
+
         if (eventoExistente == null)
             throw new ExceptionValidation("Evento não encontrado.");
-            
+
         _mapper.Map(evento, eventoExistente);
 
         await _eventoRepository.UpdateAsync(eventoExistente);
@@ -179,7 +185,7 @@ public class EventoService : BaseService, IEventoService
         if (evento == null)
             throw new ExceptionValidation("Evento não encontrado.");
 
-        if (evento.IdStatus == (int)EventoStatus.Cancelado) 
+        if (evento.IdStatus == (int)EventoStatus.Cancelado)
             throw new ExceptionValidation("O evento já está cancelado.", true);
 
         if (evento.IdStatus == (int)EventoStatus.Concluido)
@@ -194,7 +200,7 @@ public class EventoService : BaseService, IEventoService
         {
             // Verificar contribuições confirmadas
             var contribuicoesConfirmadas = await _contribuicaoPresenteRepository
-                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
                                c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Confirmado);
 
             if (contribuicoesConfirmadas.Any())
@@ -205,7 +211,7 @@ public class EventoService : BaseService, IEventoService
 
             // Verificar contribuições em análise
             var contribuicoesEmAnalise = await _contribuicaoPresenteRepository
-                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
                                c.IdStatusContribuicao == (int)StatusContribuicaoEnum.EmAnalise);
 
             if (contribuicoesEmAnalise.Any())
@@ -216,7 +222,7 @@ public class EventoService : BaseService, IEventoService
 
             // Cancelar contribuições pendentes
             var contribuicoesPendentes = await _contribuicaoPresenteRepository
-                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
                                c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Pendente);
 
             foreach (var contribuicao in contribuicoesPendentes)
@@ -265,9 +271,16 @@ public class EventoService : BaseService, IEventoService
         }
 
         await _unitOfWork.SaveChangesAsync();
-        
-        // TODO: Implementar envio de email para os participantes
-        // O email deve conter o nome do evento e a justificativa do cancelamento
+
+        // Enviar emails para os participantes
+        foreach (var participante in participantes)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
+            if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+            {
+                await _emailService.EnviarEmailEventoCanceladoAsync(usuario.Email, usuario.Nome, evento.Nome, dto.Justificativa);
+            }
+        }
     }
 
     public async Task ReativarEventoAsync(int id)
@@ -292,7 +305,7 @@ public class EventoService : BaseService, IEventoService
         if (presentesIds.Any())
         {
             var contribuicoesEstornadas = await _contribuicaoPresenteRepository
-                .FindAsync(c => presentesIds.Contains(c.IdPresente) && 
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
                                c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Estornado);
 
             if (contribuicoesEstornadas.Any())
@@ -300,11 +313,22 @@ public class EventoService : BaseService, IEventoService
                 throw new ExceptionValidation(
                     $"Não é possível reativar o evento. Existem {contribuicoesEstornadas.Count()} contribuição(ões) já estornada(s). Questões financeiras já foram resolvidas.");
             }
+
+            // Enviar emails para os participantes
+            var participantes = await _participanteRepository.GetByEventoAsync(id);
+            foreach (var participante in participantes)
+            {
+                var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
+                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+                {
+                    await _emailService.EnviarEmailEventoReativadoAsync(usuario.Email, usuario.Nome, evento.Nome);
+                }
+            }
         }
 
         // Determinar o novo status baseado na data
-        var novoStatus = evento.DataInicio > DateTime.UtcNow 
-            ? (int)EventoStatus.Agendado 
+        var novoStatus = evento.DataInicio > DateTime.UtcNow
+            ? (int)EventoStatus.Agendado
             : (int)EventoStatus.Ativo;
 
         // Atualizar status do evento

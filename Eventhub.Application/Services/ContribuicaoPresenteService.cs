@@ -14,6 +14,10 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
     private readonly IContribuicaoPresenteRepository _contribuicaoPresenteRepository;
     private readonly IPresenteRepository _presenteRepository;
     private readonly IFotosService _fotosService;
+    private readonly IParticipanteRepository _participanteRepository;
+    private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IEventoRepository _eventoRepository;
+    private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -21,12 +25,20 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
         IContribuicaoPresenteRepository contribuicaoPresenteRepository,
         IPresenteRepository presenteRepository,
         IFotosService fotosService,
+        IParticipanteRepository participanteRepository,
+        IUsuarioRepository usuarioRepository,
+        IEventoRepository eventoRepository,
+        IEmailService emailService,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _contribuicaoPresenteRepository = contribuicaoPresenteRepository;
         _presenteRepository = presenteRepository;
         _fotosService = fotosService;
+        _participanteRepository = participanteRepository;
+        _usuarioRepository = usuarioRepository;
+        _eventoRepository = eventoRepository;
+        _emailService = emailService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -98,6 +110,25 @@ public class ContribuicaoPresenteService : BaseService, IContribuicaoPresenteSer
             presente.IdStatus = (int)novoStatus;
             _presenteRepository.Update(presente);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        // Enviar email para o contribuidor
+        var participante = await _participanteRepository.GetByIdAsync(contribuicao.IdParticipante);
+        if (participante != null)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
+            var evento = await _eventoRepository.GetByIdAsync(presente.IdEvento);
+            
+            if (usuario != null && evento != null && !string.IsNullOrWhiteSpace(usuario.Email))
+            {
+                await _emailService.EnviarEmailContribuicaoCanceladaAsync(
+                    usuario.Email,
+                    usuario.Nome,
+                    presente.Nome,
+                    evento.Nome,
+                    contribuicao.Valor,
+                    dto.Justificativa);
+            }
         }
     }
 

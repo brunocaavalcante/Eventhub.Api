@@ -24,6 +24,7 @@ public static class DependencyInjection
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
         services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
+        services.Configure<EmailSettings>(configuration.GetSection("Email"));
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -68,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<IPermissaoEventoService, PermissaoEventoService>();
         services.AddScoped<IPerfilEventoPermissaoService, PerfilEventoPermissaoService>();
         services.AddScoped<IParticipantePermissaoService, ParticipantePermissaoService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IImageStorageService, CloudinaryImageStorageService>();
 
         // HttpClient

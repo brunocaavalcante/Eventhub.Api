@@ -27,6 +27,8 @@ public class EventoServiceTests
     private readonly Mock<IContribuicaoPresenteRepository> _contribuicaoPresenteRepositoryMock;
     private readonly Mock<IParticipanteRepository> _participanteRepositoryMock;
     private readonly Mock<INotificacaoRepository> _notificacaoRepositoryMock;
+    private readonly Mock<IUsuarioRepository> _usuarioRepositoryMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
 
     public EventoServiceTests()
     {
@@ -41,6 +43,8 @@ public class EventoServiceTests
         _contribuicaoPresenteRepositoryMock = new Mock<IContribuicaoPresenteRepository>();
         _participanteRepositoryMock = new Mock<IParticipanteRepository>();
         _notificacaoRepositoryMock = new Mock<INotificacaoRepository>();
+        _usuarioRepositoryMock = new Mock<IUsuarioRepository>();
+        _emailServiceMock = new Mock<IEmailService>();
         _mapper = AutoMapperHelper.CreateMapper();
 
         _eventoService = new EventoService(
@@ -55,7 +59,9 @@ public class EventoServiceTests
             _presenteRepositoryMock.Object,
             _contribuicaoPresenteRepositoryMock.Object,
             _participanteRepositoryMock.Object,
-            _notificacaoRepositoryMock.Object);
+            _notificacaoRepositoryMock.Object,
+            _usuarioRepositoryMock.Object,
+            _emailServiceMock.Object);
     }
 
     [Fact]
@@ -498,6 +504,9 @@ public class EventoServiceTests
             .ReturnsAsync(new List<Participante>());
         _notificacaoRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Notificacao>()))
             .Returns(Task.CompletedTask);
+        _emailServiceMock.Setup(x => x.EnviarEmailEventoCanceladoAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
         _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
@@ -747,6 +756,11 @@ public class EventoServiceTests
             .ReturnsAsync(evento);
         _presenteRepositoryMock.Setup(x => x.GetByEventIdAsync(eventoId))
             .ReturnsAsync(new List<Presente>());
+        _participanteRepositoryMock.Setup(x => x.GetByEventoAsync(eventoId))
+            .ReturnsAsync(new List<Participante>());
+        _emailServiceMock.Setup(x => x.EnviarEmailEventoReativadoAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
         _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync())
@@ -882,6 +896,11 @@ public class EventoServiceTests
             .ReturnsAsync(evento);
         _presenteRepositoryMock.Setup(x => x.GetByEventIdAsync(eventoId))
             .ReturnsAsync(new List<Presente>());
+        _participanteRepositoryMock.Setup(x => x.GetByEventoAsync(eventoId))
+            .ReturnsAsync(new List<Participante>());
+        _emailServiceMock.Setup(x => x.EnviarEmailEventoReativadoAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
         _eventoRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Evento>()))
             .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync())

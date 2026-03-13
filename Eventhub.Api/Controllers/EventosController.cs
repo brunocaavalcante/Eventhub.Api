@@ -1,3 +1,4 @@
+using System.Net;
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.DTOs.Evento;
@@ -312,7 +313,7 @@ public class EventosController : BaseController
             await _eventoService.ReativarEventoAsync(id);
             await _unitOfWork.CommitTransactionAsync();
 
-            return CustomResponse(new { Mensagem = "Evento reativado com sucesso." });
+            return CustomResponse(HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
