@@ -1,6 +1,27 @@
 # Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: eventhub_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123@Mudar
+      MYSQL_DATABASE: eventhub_db
+      MYSQL_USER: eventhub_user
+      MYSQL_PASSWORD: 123@Mudar
+    ports:
+      - "3306:3306"
+    volumes:
+      - eventhub_mysql_data:/var/lib/mysql
+    networks:
+      - eventhub-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:16-alpine
     container_name: eventhub-postgres
@@ -11,7 +32,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - eventhub_postgres_data:/var/lib/postgresql/data
     networks:
       - eventhub-network
     healthcheck:
@@ -62,13 +83,17 @@ services:
       - Keycloak__Audience=eventhub-api
       - Keycloak__RequireHttpsMetadata=false
     depends_on:
+      db:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
     networks:
       - eventhub-network
 
 volumes:
-  postgres_data:
+  eventhub_mysql_data:
+    driver: local
+  eventhub_postgres_data:
     driver: local
 
 networks:

@@ -92,6 +92,36 @@ public class EmailService : IEmailService
         }
     }
 
+    public async Task EnviarEmailEventoExcluidoAsync(
+        string destinatario, 
+        string nomeDestinatario, 
+        string nomeEvento, 
+        DateTime dataEvento)
+    {
+        try
+        {
+            var assunto = $"Evento Excluído: {nomeEvento}";
+            var corpoHtml = EmailTemplates.GetEventoExcluidoTemplate(
+                nomeDestinatario, 
+                nomeEvento, 
+                dataEvento);
+
+            await EnviarEmailAsync(destinatario, assunto, corpoHtml);
+            
+            _logger.LogInformation(
+                "Email de exclusão de evento enviado com sucesso para {Destinatario} - Evento: {NomeEvento}", 
+                destinatario, 
+                nomeEvento);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, 
+                "Erro ao enviar email de exclusão de evento para {Destinatario} - Evento: {NomeEvento}", 
+                destinatario, 
+                nomeEvento);
+        }
+    }
+
     public async Task EnviarEmailContribuicaoCanceladaAsync(
         string destinatario, 
         string nomeDestinatario, 

@@ -38,6 +38,20 @@ public static class EmailTemplates
             .Replace("{{NomeEvento}}", nomeEvento);
     }
 
+    public static string GetEventoExcluidoTemplate(
+        string nomeDestinatario, 
+        string nomeEvento, 
+        DateTime dataEvento)
+    {
+        var dataFormatada = dataEvento.ToString("dd/MM/yyyy HH:mm", new System.Globalization.CultureInfo("pt-BR"));
+        var template = CarregarTemplate("EventoExcluido.html");
+        
+        return template
+            .Replace("{{NomeDestinatario}}", nomeDestinatario)
+            .Replace("{{NomeEvento}}", nomeEvento)
+            .Replace("{{DataEvento}}", dataFormatada);
+    }
+
     public static string GetContribuicaoCanceladaTemplate(
         string nomeDestinatario, 
         string nomePresente, 

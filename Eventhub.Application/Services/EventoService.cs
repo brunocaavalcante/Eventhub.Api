@@ -172,8 +172,105 @@ public class EventoService : BaseService, IEventoService
         if (evento == null)
             throw new ExceptionValidation("Evento não encontrado.");
 
+        if (evento.DataInicio <= DateTime.UtcNow)
+        {
+            throw new ExceptionValidation(
+                "Não é possível excluir um evento que já iniciou. Considere cancelá-lo ao invés de excluí-lo.", 
+                true);
+        }
+
+        if (evento.IdStatus == (int)EventoStatus.Concluido)
+        {
+            throw new ExceptionValidation(
+                "Não é possível excluir um evento que já foi concluído. O histórico deve ser preservado.", 
+                true);
+        }
+
+        var presentes = await _presenteRepository.GetByEventIdAsync(id);
+        var presentesIds = presentes.Select(p => p.Id).ToList();
+
+        if (presentesIds.Any())
+        {
+            var contribuicoesConfirmadas = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Confirmado);
+
+            if (contribuicoesConfirmadas.Any())
+            {
+                throw new ExceptionValidation(
+                    $"Não é possível excluir o evento. Existem {contribuicoesConfirmadas.Count()} contribuição(ões) confirmada(s) que precisam ser estornadas antes da exclusão.", 
+                    true);
+            }
+
+            var contribuicoesEmAnalise = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.EmAnalise);
+
+            if (contribuicoesEmAnalise.Any())
+            {
+                throw new ExceptionValidation(
+                    $"Não é possível excluir o evento. Existem {contribuicoesEmAnalise.Count()} contribuição(ões) em análise que precisam ser resolvidas antes da exclusão.", 
+                    true);
+            }
+
+            // AÇÃO: Cancelar contribuições pendentes automaticamente
+            var contribuicoesPendentes = await _contribuicaoPresenteRepository
+                .FindAsync(c => presentesIds.Contains(c.IdPresente) &&
+                               c.IdStatusContribuicao == (int)StatusContribuicaoEnum.Pendente);
+
+            foreach (var contribuicao in contribuicoesPendentes)
+            {
+                contribuicao.IdStatusContribuicao = (int)StatusContribuicaoEnum.Cancelado;
+                contribuicao.Justificativa = "Contribuição cancelada automaticamente devido à exclusão do evento.";
+                await _contribuicaoPresenteRepository.UpdateAsync(contribuicao);
+            }
+        }
+
+        // REGRA 4: Notificar todos os participantes antes da exclusão
+        var participantes = await _participanteRepository.GetByEventoAsync(id);
+        
+        if (participantes.Any())
+        {
+            foreach (var participante in participantes)
+            {
+                var notificacao = new Notificacao
+                {
+                    IdEvento = evento.Id,
+                    IdUsuarioOrigem = evento.IdUsuarioCriador,
+                    IdUsuarioDestino = participante.IdUsuario,
+                    Data = DateTime.UtcNow,
+                    Titulo = "Evento Excluído",
+                    Descricao = $"O evento '{evento.Nome}' foi excluído pelo organizador.",
+                    LinkAcao = string.Empty,
+                    Icone = "delete",
+                    Status = "NaoLida",
+                    Prioridade = 1,
+                    DataCadastro = DateTime.UtcNow,
+                    DataEnvio = DateTime.UtcNow
+                };
+
+                await _notificacaoRepository.AddAsync(notificacao);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // Enviar emails para os participantes
+            foreach (var participante in participantes)
+            {
+                var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
+                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+                {
+                    await _emailService.EnviarEmailEventoExcluidoAsync(
+                        usuario.Email, 
+                        usuario.Nome, 
+                        evento.Nome, 
+                        evento.DataInicio);
+                }
+            }
+        }
+        
         _eventoRepository.Remove(evento);
-        await _unitOfWork.CommitTransactionAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task CancelarEventoAsync(int id, CancelarEventoDto dto)

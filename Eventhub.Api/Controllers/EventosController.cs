@@ -176,18 +176,32 @@ public class EventosController : BaseController
     /// <summary>
     /// Remove um evento
     /// </summary>
+    /// <remarks>
+    /// Remove permanentemente um evento e todos os dados relacionados, com as seguintes validações:
+    /// - Não pode ter iniciado (DataInicio já passou)
+    /// - Não pode estar concluído
+    /// - Não pode ter contribuições confirmadas ou em análise
+    /// - Cancela automaticamente contribuições pendentes
+    /// - Notifica todos os participantes sobre a exclusão
+    /// - Remove em cascade: Galerias, Fotos, Programações, Notificações, Participantes, Presentes, Contribuições, PixEventos, Permissões
+    /// </remarks>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(CustomResponse<object>), 204)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
     [ProducesResponseType(typeof(CustomResponse<object>), 404)]
     public async Task<IActionResult> Remover(int id)
     {
         try
         {
+            await _unitOfWork.BeginTransactionAsync();
             await _eventoService.RemoverAsync(id);
-            return CustomResponse<object>(new { }, 204);
+            await _unitOfWork.CommitTransactionAsync();
+            
+            return CustomResponse<object>(new { Mensagem = "Evento excluído com sucesso. Notificações enviadas aos participantes." }, 204);
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }

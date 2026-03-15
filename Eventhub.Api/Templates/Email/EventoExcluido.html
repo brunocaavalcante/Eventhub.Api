@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evento Excluído - EventHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px 20px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EventHub</h1>
+        </div>
+        <div class="content">
+            <h2>Olá, {{NomeDestinatario}}!</h2>
+            <p>Informamos que o evento <strong>{{NomeEvento}}</strong> foi <strong style="color: #dc3545;">excluído permanentemente</strong> pelo organizador.</p>
+            
+            <div class="highlight-box">
+                <strong>⚠️ Atenção:</strong><br/>
+                Todos os dados relacionados ao evento foram removidos do sistema, incluindo convites, listas de presentes e contribuições pendentes.
+            </div>
+
+            <div class="info-box">
+                <strong>📅 Data do Evento:</strong> {{DataEvento}}<br/>
+                <strong>🗑️ Evento:</strong> {{NomeEvento}}
+            </div>
+            
+            <p>Lamentamos qualquer inconveniente causado. Esperamos vê-lo em nossos próximos eventos!</p>
+            <p>Se você tiver alguma dúvida sobre a exclusão, entre em contato com o organizador.</p>
+            
+            <p>Atenciosamente,<br/>Equipe EventHub</p>
+        </div>
+        <div class="footer">
+            <p>Este é um e-mail automático, por favor não responda.</p>
+            <p>&copy; 2026 EventHub. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

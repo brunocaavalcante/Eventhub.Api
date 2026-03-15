@@ -37,7 +37,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./docker/mysql_data:/var/lib/mysql
+      - eventhub_mysql_data:/var/lib/mysql
     networks:
       - eventhub_network
     healthcheck:
@@ -56,7 +56,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./docker/postgres_data:/var/lib/postgresql/data
+      - eventhub_postgres_data:/var/lib/postgresql/data
     networks:
       - eventhub_network
     healthcheck:
@@ -92,6 +92,12 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+volumes:
+  eventhub_mysql_data:
+    driver: local
+  eventhub_postgres_data:
+    driver: local
 
 networks:
   eventhub_network:

@@ -13,6 +13,12 @@ public interface IEmailService
         string nomeDestinatario, 
         string nomeEvento);
 
+    Task EnviarEmailEventoExcluidoAsync(
+        string destinatario, 
+        string nomeDestinatario, 
+        string nomeEvento, 
+        DateTime dataEvento);
+
     Task EnviarEmailContribuicaoCanceladaAsync(
         string destinatario, 
         string nomeDestinatario, 
