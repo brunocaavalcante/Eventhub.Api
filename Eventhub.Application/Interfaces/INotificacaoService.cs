@@ -1,12 +1,15 @@
+using Eventhub.Application.DTOs;
 using Eventhub.Domain.Entities;
 
 namespace Eventhub.Application.Interfaces;
 
 public interface INotificacaoService
 {
-    Task<Notificacao> AdicionarAsync(Notificacao notificacao);
-    Task<Notificacao> AtualizarAsync(Notificacao notificacao);
-    Task RemoverAsync(int id);
-    Task<IEnumerable<Notificacao>> ObterPorUsuarioAsync(int idUsuario);
-    Task<IEnumerable<Notificacao>> ObterNaoLidasAsync(int idUsuario);
+    Task<NotificacaoResponseDto> AdicionarAsync(NotificacaoCreateDto dto);
+    Task RemoverAsync(int id, int idUsuario);
+    Task<NotificacaoResponseDto?> ObterPorIdAsync(int id, int idUsuario);
+    Task<IEnumerable<NotificacaoResponseDto>> ObterPorUsuarioAsync(int idUsuario);
+    Task<IEnumerable<NotificacaoResponseDto>> ObterNaoLidasAsync(int idUsuario);
+    Task<NotificacaoResponseDto> MarcarComoLidaAsync(int id, int idUsuario);
+    Task MarcarTodasComoLidasAsync(int idUsuario);
 }

@@ -353,14 +353,12 @@ public class EventoServiceTests
         {
             Id = eventoId,
             Descricao = "Evento Teste",
-            DataInicio = DateTime.Now,
-            DataFim = DateTime.Now.AddDays(1)
+            DataInicio = DateTime.Now.AddDays(1),
+            DataFim = DateTime.Now.AddDays(2)
         };
 
-        _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId))
-            .ReturnsAsync(evento);
-        _unitOfWorkMock.Setup(x => x.CommitTransactionAsync())
-            .Returns(Task.CompletedTask);
+        _eventoRepositoryMock.Setup(x => x.GetByIdAsync(eventoId)).ReturnsAsync(evento);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
         await _eventoService.RemoverAsync(eventoId);
@@ -368,7 +366,7 @@ public class EventoServiceTests
         // Assert
         _eventoRepositoryMock.Verify(x => x.GetByIdAsync(eventoId), Times.Once);
         _eventoRepositoryMock.Verify(x => x.Remove(It.IsAny<Evento>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]

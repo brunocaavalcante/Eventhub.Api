@@ -118,5 +118,14 @@ public class EventhubMappingProfile : Profile
         CreateMap<CreatePixEventoDto, PixEvento>();
         CreateMap<UpdatePixEventoDto, PixEvento>();
         CreateMap<PixEvento, PixEventoDto>();
+
+        // Notificacao Mappings
+        CreateMap<NotificacaoCreateDto, Notificacao>();
+        CreateMap<Notificacao, NotificacaoResponseDto>()
+            .ForMember(dest => dest.NomeUsuarioOrigem, opt => opt.MapFrom(src => src.UsuarioOrigem.Nome))
+            .ForMember(dest => dest.NomeUsuarioDestino, opt => opt.MapFrom(src => src.UsuarioDestino.Nome))
+            .ForMember(dest => dest.NomeEvento, opt => opt.MapFrom(src => src.Evento.Nome))
+            .ForMember(dest => dest.DescricaoTipoNotificacao, opt => opt.MapFrom(src =>
+                src.TipoNotificacao != null ? src.TipoNotificacao.Descricao : null));
     }
 }

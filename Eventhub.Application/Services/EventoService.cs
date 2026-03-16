@@ -243,8 +243,8 @@ public class EventoService : BaseService, IEventoService
                     Descricao = $"O evento '{evento.Nome}' foi excluído pelo organizador.",
                     LinkAcao = string.Empty,
                     Icone = "delete",
-                    Status = "NaoLida",
-                    Prioridade = 1,
+                    Status = EnumNotificacaoStatus.Enviada,
+                    Prioridade = EnumNotificacaoPrioridade.Alta,
                     DataCadastro = DateTime.UtcNow,
                     DataEnvio = DateTime.UtcNow
                 };
@@ -358,8 +358,8 @@ public class EventoService : BaseService, IEventoService
                 Descricao = $"O evento '{evento.Nome}' foi cancelado. Motivo: {dto.Justificativa}",
                 LinkAcao = $"/eventos/{evento.Id}",
                 Icone = "cancel",
-                Status = "NaoLida",
-                Prioridade = 1,
+                Status = EnumNotificacaoStatus.Enviada,
+                Prioridade = EnumNotificacaoPrioridade.Alta,
                 DataCadastro = DateTime.UtcNow,
                 DataEnvio = DateTime.UtcNow
             };

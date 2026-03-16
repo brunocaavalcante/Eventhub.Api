@@ -135,7 +135,8 @@ public class AuthService : BaseService, IAuthService
                 username = email,
                 password = senhaDescriptografada,
                 scope = "openid profile email offline_access",
-                realm = "Username-Password-Authentication"
+                realm = "Username-Password-Authentication",
+                audience = _audience
             };
 
             var json = JsonSerializer.Serialize(payload);

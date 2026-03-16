@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -39,10 +40,12 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
 
         builder.Property(n => n.Status)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .HasConversion<string>();
 
         builder.Property(n => n.Prioridade)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion<string>();
 
         builder.Property(n => n.DataCadastro)
             .IsRequired();
@@ -51,6 +54,9 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
             .IsRequired();
 
         builder.Property(n => n.DataLeitura);
+
+        builder.Property(n => n.IdTipoNotificacao)
+            .HasColumnName("NotificacaoTipoId");
 
         // Relacionamentos
         builder.HasOne(n => n.Evento)
@@ -67,5 +73,10 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
             .WithMany(u => u.NotificacoesRecebidas)
             .HasForeignKey(n => n.IdUsuarioDestino)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(n => n.TipoNotificacao)
+            .WithMany()
+            .HasForeignKey(n => n.IdTipoNotificacao)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
