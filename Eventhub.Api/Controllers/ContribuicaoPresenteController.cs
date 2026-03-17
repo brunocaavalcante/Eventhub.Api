@@ -2,11 +2,13 @@ using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eventhub.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ContribuicaoPresenteController : BaseController
 {

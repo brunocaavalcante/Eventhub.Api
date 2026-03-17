@@ -55,9 +55,6 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
 
         builder.Property(n => n.DataLeitura);
 
-        builder.Property(n => n.IdTipoNotificacao)
-            .HasColumnName("NotificacaoTipoId");
-
         // Relacionamentos
         builder.HasOne(n => n.Evento)
             .WithMany(e => e.Notificacoes)
@@ -73,10 +70,5 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
             .WithMany(u => u.NotificacoesRecebidas)
             .HasForeignKey(n => n.IdUsuarioDestino)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(n => n.TipoNotificacao)
-            .WithMany()
-            .HasForeignKey(n => n.IdTipoNotificacao)
-            .OnDelete(DeleteBehavior.SetNull);
     }
 }

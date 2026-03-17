@@ -19,7 +19,6 @@ public class NotificacaoRepository : Repository<Notificacao>, INotificacaoReposi
             .Include(n => n.UsuarioOrigem)
             .Include(n => n.UsuarioDestino)
             .Include(n => n.Evento)
-            .Include(n => n.TipoNotificacao)
             .OrderByDescending(n => n.DataEnvio)
             .ToListAsync();
     }
@@ -31,7 +30,6 @@ public class NotificacaoRepository : Repository<Notificacao>, INotificacaoReposi
             .Include(n => n.UsuarioOrigem)
             .Include(n => n.UsuarioDestino)
             .Include(n => n.Evento)
-            .Include(n => n.TipoNotificacao)
             .OrderByDescending(n => n.DataEnvio)
             .ToListAsync();
     }
@@ -42,7 +40,6 @@ public class NotificacaoRepository : Repository<Notificacao>, INotificacaoReposi
             .Include(n => n.UsuarioOrigem)
             .Include(n => n.UsuarioDestino)
             .Include(n => n.Evento)
-            .Include(n => n.TipoNotificacao)
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 

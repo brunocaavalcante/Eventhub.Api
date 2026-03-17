@@ -13,8 +13,6 @@ public class NotificacaoResponseDto
     public string NomeUsuarioOrigem { get; set; } = string.Empty;
     public int IdEvento { get; set; }
     public string NomeEvento { get; set; } = string.Empty;
-    public int? IdTipoNotificacao { get; set; }
-    public string? DescricaoTipoNotificacao { get; set; }
     public EnumNotificacaoStatus Status { get; set; }
     public EnumNotificacaoPrioridade Prioridade { get; set; }
     public string LinkAcao { get; set; } = string.Empty;

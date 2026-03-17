@@ -8,7 +8,6 @@ public class Notificacao
     public int IdEvento { get; set; }
     public int IdUsuarioOrigem { get; set; }
     public int IdUsuarioDestino { get; set; }
-    public int? IdTipoNotificacao { get; set; }
     public DateTime Data { get; set; }
     public string Titulo { get; set; } = string.Empty;
     public string Descricao { get; set; } = string.Empty;
@@ -24,5 +23,4 @@ public class Notificacao
     public Evento Evento { get; set; } = null!;
     public Usuario UsuarioOrigem { get; set; } = null!;
     public Usuario UsuarioDestino { get; set; } = null!;
-    public NotificacaoTipo? TipoNotificacao { get; set; }
 }

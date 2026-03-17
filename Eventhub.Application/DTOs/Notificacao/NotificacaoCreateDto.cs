@@ -9,7 +9,7 @@ public class NotificacaoCreateDto
     public int IdUsuarioDestino { get; set; }
     public int IdEvento { get; set; }
     public int IdUsuarioOrigem { get; set; }
-    public int? IdTipoNotificacao { get; set; }
+
     public EnumNotificacaoStatus Status { get; set; } = EnumNotificacaoStatus.Enviada;
     public EnumNotificacaoPrioridade Prioridade { get; set; } = EnumNotificacaoPrioridade.Media;
     public string LinkAcao { get; set; } = string.Empty;

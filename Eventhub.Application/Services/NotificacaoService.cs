@@ -70,7 +70,7 @@ public class NotificacaoService : BaseService, INotificacaoService
 
         // Validar permissão: usuário só pode deletar suas próprias notificações
         if (notificacao.IdUsuarioDestino != idUsuario)
-            throw new ExceptionValidation("Você não tem permissão para remover esta notificação.");
+            throw new ExceptionValidation("Você não tem permissão para remover esta notificação.", true);
 
         _notificacaoRepository.Remove(notificacao);
         await _unitOfWork.SaveChangesAsync();
@@ -79,13 +79,13 @@ public class NotificacaoService : BaseService, INotificacaoService
     public async Task<NotificacaoResponseDto?> ObterPorIdAsync(int id, int idUsuario)
     {
         var notificacao = await _notificacaoRepository.GetByIdWithIncludesAsync(id);
-        
+
         if (notificacao == null)
             return null;
 
         // Validar permissão: usuário só pode ver suas próprias notificações
         if (notificacao.IdUsuarioDestino != idUsuario)
-            throw new ExceptionValidation("Você não tem permissão para acessar esta notificação.");
+            throw new ExceptionValidation("Você não tem permissão para acessar esta notificação.", true);
 
         return _mapper.Map<NotificacaoResponseDto>(notificacao);
     }
@@ -110,14 +110,14 @@ public class NotificacaoService : BaseService, INotificacaoService
 
         // Validar permissão: usuário só pode marcar como lida suas próprias notificações
         if (notificacao.IdUsuarioDestino != idUsuario)
-            throw new ExceptionValidation("Você não tem permissão para marcar esta notificação como lida.");
+            throw new ExceptionValidation("Você não tem permissão para marcar esta notificação como lida.", true);
 
         notificacao.Status = EnumNotificacaoStatus.Lida;
         notificacao.DataLeitura = DateTime.UtcNow;
 
         _notificacaoRepository.Update(notificacao);
         await _unitOfWork.SaveChangesAsync();
-    
+
         // Recarregar com includes
         var notificacaoAtualizada = await _notificacaoRepository.GetByIdWithIncludesAsync(id);
         return _mapper.Map<NotificacaoResponseDto>(notificacaoAtualizada);
