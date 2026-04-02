@@ -26,9 +26,6 @@ public class ProgramacaoEventoValidation : AbstractValidator<ProgramacaoEvento>
         RuleFor(p => p.Local)
             .MaximumLength(200).WithMessage("O local deve ter até 200 caracteres.");
 
-        RuleFor(p => p.IdFoto)
-            .GreaterThan(0).WithMessage("A foto é obrigatória.");
-
         RuleFor(p => p.Responsavel)
             .MaximumLength(200).WithMessage("O responsável deve ter até 200 caracteres.");
 

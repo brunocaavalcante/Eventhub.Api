@@ -1,11 +1,12 @@
-using Eventhub.Domain.Entities;
+using Eventhub.Application.DTOs;
 
 namespace Eventhub.Application.Interfaces;
 
 public interface IProgramacaoEventoService
 {
-    Task<ProgramacaoEvento> AdicionarAsync(ProgramacaoEvento programacao);
-    Task<ProgramacaoEvento> AtualizarAsync(ProgramacaoEvento programacao);
+    Task<ProgramacaoEventoResponseDto> AdicionarAsync(ProgramacaoEventoCreateDto dto);
+    Task<ProgramacaoEventoResponseDto> AtualizarAsync(ProgramacaoEventoUpdateDto dto);
     Task RemoverAsync(int id);
-    Task<IEnumerable<ProgramacaoEvento>> ObterPorEventoAsync(int idEvento);
+    Task<ProgramacaoEventoResponseDto> ObterPorIdAsync(int id);
+    Task<IEnumerable<ProgramacaoEventoResponseDto>> ObterPorEventoAsync(int idEvento);
 }

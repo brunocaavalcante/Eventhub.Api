@@ -125,5 +125,18 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.NomeUsuarioOrigem, opt => opt.MapFrom(src => src.UsuarioOrigem.Nome))
             .ForMember(dest => dest.NomeUsuarioDestino, opt => opt.MapFrom(src => src.UsuarioDestino.Nome))
             .ForMember(dest => dest.NomeEvento, opt => opt.MapFrom(src => src.Evento.Nome));
+
+        // ProgramacaoEvento Mappings
+        CreateMap<ProgramacaoEventoCreateDto, ProgramacaoEvento>()
+            .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
+        
+        CreateMap<ProgramacaoEventoUpdateDto, ProgramacaoEvento>()
+            .ForMember(dest => dest.IdEvento, opt => opt.Ignore())
+            .ForMember(dest => dest.IdFoto, opt => opt.Ignore())
+            .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
+        
+        CreateMap<ProgramacaoEvento, ProgramacaoEventoResponseDto>()
+            .ForMember(dest => dest.NomeEvento, opt => opt.MapFrom(src => src.Evento.Nome))
+            .ForMember(dest => dest.DescricaoStatus, opt => opt.MapFrom(src => src.Status.Descricao));
     }
 }
