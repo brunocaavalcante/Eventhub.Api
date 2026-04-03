@@ -46,7 +46,7 @@ public class AuthService : BaseService, IAuthService
 
         var usuario = await _usuarioRepository.GetByEmailAsync(loginRequest.Email);
         if (usuario == null)
-            throw new ExceptionValidation("Usuário não encontrado.");
+            throw new ExceptionValidation("Usuário não encontrado.", true);
 
         var tokenResponse = await ObterTokenAuth0Async(loginRequest.Email, loginRequest.Password);
 

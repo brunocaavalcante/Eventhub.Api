@@ -48,7 +48,8 @@ public class ParticipanteService : BaseService, IParticipanteService
             Usuario = usuario,
             IdUsuario = usuario.Id,
             CadastroPendente = UsuarioEstaPendente(usuario),
-            DataCadastro = DateTime.UtcNow
+            DataCadastro = DateTime.UtcNow,
+            IdStatusConvite = (int)EnumStatusEnvioConvite.PendenteEnvio
         };
 
         if (await _participanteRepository.ExistsAsync(participante.IdEvento, participante.IdUsuario, participante.IdPerfil))

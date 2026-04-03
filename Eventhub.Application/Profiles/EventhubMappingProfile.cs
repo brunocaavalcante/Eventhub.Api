@@ -50,7 +50,7 @@ public class EventhubMappingProfile : Profile
                     : string.Empty))
             .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.QtdAcompanhantes))
             .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src =>
-                src.StatusConvite != null ? src.StatusConvite.Descricao : "SemResposta"));
+                src.StatusConvite != null ? src.StatusConvite.Descricao : "PendenteEnvio"));
 
         CreateMap<UploadFotoDto, Fotos>().ReverseMap();
         CreateMap<UpdateFotoDto, Fotos>().ReverseMap();
