@@ -38,6 +38,15 @@ public class EmailService : IEmailService
         string nomeEvento, 
         string justificativa)
     {
+        // Não enviar emails para endereços temporários (usuários pendentes de cadastro)
+        if (EmailHelper.EhEmailTemporario(destinatario))
+        {
+            _logger.LogDebug(
+                "Email de cancelamento não enviado - destinatário com email temporário: {NomeEvento}",
+                nomeEvento);
+            return;
+        }
+
         try
         {
             var assunto = $"Evento Cancelado: {nomeEvento}";
@@ -68,6 +77,15 @@ public class EmailService : IEmailService
         string nomeDestinatario, 
         string nomeEvento)
     {
+        // Não enviar emails para endereços temporários (usuários pendentes de cadastro)
+        if (EmailHelper.EhEmailTemporario(destinatario))
+        {
+            _logger.LogDebug(
+                "Email de reativação não enviado - destinatário com email temporário: {NomeEvento}",
+                nomeEvento);
+            return;
+        }
+
         try
         {
             var assunto = $"Evento Reativado: {nomeEvento}";
@@ -98,6 +116,15 @@ public class EmailService : IEmailService
         string nomeEvento, 
         DateTime dataEvento)
     {
+        // Não enviar emails para endereços temporários (usuários pendentes de cadastro)
+        if (EmailHelper.EhEmailTemporario(destinatario))
+        {
+            _logger.LogDebug(
+                "Email de exclusão não enviado - destinatário com email temporário: {NomeEvento}",
+                nomeEvento);
+            return;
+        }
+
         try
         {
             var assunto = $"Evento Excluído: {nomeEvento}";
@@ -130,6 +157,15 @@ public class EmailService : IEmailService
         decimal valorContribuicao, 
         string justificativa)
     {
+        // Não enviar emails para endereços temporários (usuários pendentes de cadastro)
+        if (EmailHelper.EhEmailTemporario(destinatario))
+        {
+            _logger.LogDebug(
+                "Email de cancelamento de contribuição não enviado - destinatário com email temporário: {NomePresente}",
+                nomePresente);
+            return;
+        }
+
         try
         {
             var assunto = $"Contribuição Cancelada: {nomePresente}";

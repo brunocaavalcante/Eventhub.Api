@@ -239,17 +239,26 @@ public class ParticipanteService : BaseService, IParticipanteService
 
     private async Task<Usuario> ObterOuCriarUsuarioAsync(CreateParticipanteDto participanteDto)
     {
-        if (string.IsNullOrWhiteSpace(participanteDto.Nome) || string.IsNullOrWhiteSpace(participanteDto.Email))
-            throw new ExceptionValidation("Nome e e-mail são obrigatórios para criar um usuário temporário.");
+        // Validar que ao menos Nome e (Email OU Telefone) foram fornecidos
+        if (string.IsNullOrWhiteSpace(participanteDto.Nome))
+            throw new ExceptionValidation("Nome é obrigatório para criar um usuário.");
 
-        var usuarioExistente = await _usuarioRepository.GetByEmailAsync(participanteDto.Email);
+        if (string.IsNullOrWhiteSpace(participanteDto.Email) && string.IsNullOrWhiteSpace(participanteDto.Telefone))
+            throw new ExceptionValidation("E-mail ou telefone é obrigatório para criar um usuário.");
+            
+        var usuarioExistente = await _usuarioRepository.GetByEmailTelefoneAsync(participanteDto.Email, participanteDto.Telefone);
         if (usuarioExistente != null)
             return usuarioExistente;
+
+        // Se email não foi fornecido, gerar email temporário
+        var email = string.IsNullOrWhiteSpace(participanteDto.Email) 
+            ? EmailHelper.GerarEmailTemporario() 
+            : participanteDto.Email;
 
         var novoUsuario = new Usuario
         {
             Nome = participanteDto.Nome,
-            Email = participanteDto.Email,
+            Email = email,
             Telefone = participanteDto.Telefone,
             DataCadastro = DateTime.UtcNow,
             Status = StatusPendente

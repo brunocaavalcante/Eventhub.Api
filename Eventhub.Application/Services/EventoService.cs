@@ -258,7 +258,7 @@ public class EventoService : BaseService, IEventoService
             foreach (var participante in participantes)
             {
                 var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
-                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email) && !EmailHelper.EhEmailTemporario(usuario.Email))
                 {
                     await _emailService.EnviarEmailEventoExcluidoAsync(
                         usuario.Email, 
@@ -373,7 +373,7 @@ public class EventoService : BaseService, IEventoService
         foreach (var participante in participantes)
         {
             var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
-            if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+            if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email) && !EmailHelper.EhEmailTemporario(usuario.Email))
             {
                 await _emailService.EnviarEmailEventoCanceladoAsync(usuario.Email, usuario.Nome, evento.Nome, dto.Justificativa);
             }
@@ -416,7 +416,7 @@ public class EventoService : BaseService, IEventoService
             foreach (var participante in participantes)
             {
                 var usuario = await _usuarioRepository.GetByIdAsync(participante.IdUsuario);
-                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email))
+                if (usuario != null && !string.IsNullOrWhiteSpace(usuario.Email) && !EmailHelper.EhEmailTemporario(usuario.Email))
                 {
                     await _emailService.EnviarEmailEventoReativadoAsync(usuario.Email, usuario.Nome, evento.Nome);
                 }
