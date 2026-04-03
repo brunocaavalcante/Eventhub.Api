@@ -18,17 +18,16 @@ public class NotificacaoValidation : AbstractValidator<Notificacao>
 
         RuleFor(n => n.Titulo)
             .NotEmpty().WithMessage("O título é obrigatório.")
-            .MaximumLength(200).WithMessage("O título deve ter até 200 caracteres.");
+            .MaximumLength(100).WithMessage("O título deve ter até 100 caracteres.");
 
         RuleFor(n => n.Descricao)
             .NotEmpty().WithMessage("A descrição é obrigatória.")
-            .MaximumLength(1000).WithMessage("A descrição deve ter até 1000 caracteres.");
+            .MaximumLength(500).WithMessage("A descrição deve ter até 500 caracteres.");
 
         RuleFor(n => n.Status)
-            .NotEmpty().WithMessage("O status é obrigatório.")
-            .MaximumLength(50).WithMessage("O status deve ter até 50 caracteres.");
+            .IsInEnum().WithMessage("O status deve ser um valor válido (Enviada, Lida).");
 
         RuleFor(n => n.Prioridade)
-            .InclusiveBetween(1, 5).WithMessage("A prioridade deve estar entre 1 e 5.");
+            .IsInEnum().WithMessage("A prioridade deve ser um valor válido (Baixa, Média, Alta ou Urgente).");
     }
 }

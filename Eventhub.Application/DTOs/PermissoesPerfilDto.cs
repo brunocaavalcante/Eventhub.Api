@@ -24,4 +24,5 @@ public class ModuloDto
     public string Icone { get; set; } = string.Empty;
     public string Rota { get; set; } = string.Empty;
     public int Ordem { get; set; }
+    public bool ShowInMenu { get; set; }
 }

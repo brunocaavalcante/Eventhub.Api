@@ -11,4 +11,8 @@ public interface IParticipanteService
     Task<ParticipanteDto?> ObterPorIdAsync(int id);
     Task<ParticipanteDto?> ObterPorUsuarioEventoAsync(int idParticipante, int idEvento);
     Task<IEnumerable<ListarConvidadoDto>> ObterConvidadosPorEventoAsync(int idEvento);
+    Task<IEnumerable<ListarConvidadoDto>> ObterConfirmadosAsync(int idEvento);
+    Task<ParticipanteDto> ConfirmarPresencaAsync(ConfirmarPresencaDto dto);
+    Task<ParticipanteDto> RecusarConviteAsync(RecusarConviteDto dto);
+    Task<ParticipanteDto> AprovarPresencaAsync(int idParticipante, AprovarPresencaDto dto);
 }

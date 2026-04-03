@@ -1,5 +1,6 @@
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Interfaces;
 using Eventhub.Application.Services;
 using Eventhub.Domain.Entities;
 using Eventhub.Domain.Exceptions;
@@ -12,15 +13,19 @@ namespace Eventhub.Tests.Services
     {
         private readonly Mock<IParticipanteRepository> _participanteRepoMock = new();
         private readonly Mock<IUsuarioRepository> _usuarioRepoMock = new();
+        private readonly Mock<IEventoRepository> _eventoRepoMock = new();
         private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
         private readonly ParticipanteService _service;
+        private readonly Mock<IParticipantePermissaoService> _perfilEventoPermissaoRepoMock = new();
 
         public ParticipanteServiceTests()
         {
             _service = new ParticipanteService(
                 _participanteRepoMock.Object,
                 _usuarioRepoMock.Object,
+                _eventoRepoMock.Object,
+                _perfilEventoPermissaoRepoMock.Object,
                 _unitOfWorkMock.Object,
                 _mapperMock.Object);
         }

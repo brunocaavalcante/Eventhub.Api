@@ -28,6 +28,22 @@ public class ParticipanteMapping : IEntityTypeConfiguration<Participante>
         builder.Property(p => p.DataCadastro)
             .IsRequired();
 
+        builder.Property(p => p.IdStatusConvite)
+            .IsRequired(false);
+
+        builder.Property(p => p.QtdAcompanhantes)
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        builder.Property(p => p.MensagemOrganizador)
+            .HasMaxLength(1000);
+
+        builder.Property(p => p.MotivoRecusa)
+            .HasMaxLength(1000);
+
+        builder.Property(p => p.DataResposta)
+            .IsRequired(false);
+
         builder.HasIndex(p => new { p.IdEvento, p.IdUsuario, p.IdPerfil })
             .IsUnique();
 
@@ -45,5 +61,10 @@ public class ParticipanteMapping : IEntityTypeConfiguration<Participante>
             .WithMany(perfil => perfil.Participantes)
             .HasForeignKey(p => p.IdPerfil)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.StatusConvite)
+            .WithMany()
+            .HasForeignKey(p => p.IdStatusConvite)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -8,5 +8,7 @@ public interface IParticipanteRepository : IRepository<Participante>
     Task<Participante?> GetByIdWithDetailsAsync(int id);
     Task<Participante?> GetByUsuarioEventoWithDetailsAsync(int idParticipante, int idEvento);
     Task<IEnumerable<Participante>?> ObterConvidadoAcompanhantesPorEvento(int idEvento);
+    Task<IEnumerable<Participante>> ObterConfirmadosPorEventoAsync(int idEvento);
+    Task<int> ContarConfirmadosAsync(int idEvento);
     Task<bool> ExistsAsync(int idEvento, int idUsuario, int idPerfil, int? ignoreId = null);
 }

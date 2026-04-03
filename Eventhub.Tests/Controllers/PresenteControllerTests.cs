@@ -275,4 +275,41 @@ public class PresentesControllerTests
         objectResult!.StatusCode.Should().Be(500);
         _unitOfWorkMock.Verify(u => u.RollbackTransactionAsync(), Times.Once);
     }
+
+    [Fact]
+    public async Task ObterStatusPresentes_DeveRetornarOkComLista()
+    {
+        // Arrange
+        var dtos = new List<StatusPresenteDto>
+        {
+            new StatusPresenteDto { Id = 1, Descricao = "Disponível" },
+            new StatusPresenteDto { Id = 2, Descricao = "Reservado" }
+        };
+        _serviceMock.Setup(s => s.ObterStatusPresentesAsync()).ReturnsAsync(dtos);
+
+        // Act
+        var result = await _controller.ObterStatusPresentes();
+
+        // Assert
+        var okResult = result as ObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.StatusCode.Should().Be(200);
+        _serviceMock.Verify(s => s.ObterStatusPresentesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterStatusPresentes_ServiceLancaExcecao_DeveRetornarErro()
+    {
+        // Arrange
+        _serviceMock.Setup(s => s.ObterStatusPresentesAsync())
+            .ThrowsAsync(new Exception("Erro interno"));
+
+        // Act
+        var result = await _controller.ObterStatusPresentes();
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        objectResult.Should().NotBeNull();
+        objectResult!.StatusCode.Should().Be(500);
+    }
 }

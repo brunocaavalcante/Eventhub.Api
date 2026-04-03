@@ -42,9 +42,28 @@ public class ParticipanteRepository : Repository<Participante>, IParticipanteRep
     {
         return await _dbSet
             .Include(p => p.Usuario).ThenInclude(f => f.Foto)
-            .Include(p => p.EnviosConvite)
+            .Include(p => p.StatusConvite)
             .Where(p => p.IdEvento == idEvento && p.IdPerfil == (int)EnumPerfil.Convidado)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Participante>> ObterConfirmadosPorEventoAsync(int idEvento)
+    {
+        return await _dbSet
+            .Include(p => p.Usuario).ThenInclude(f => f.Foto)
+            .Include(p => p.StatusConvite)
+            .Where(p => p.IdEvento == idEvento
+                     && p.IdPerfil == (int)EnumPerfil.Convidado
+                     && p.IdStatusConvite == (int)EnumStatusEnvioConvite.Confirmado)
+            .ToListAsync();
+    }
+
+    public async Task<int> ContarConfirmadosAsync(int idEvento)
+    {
+        return await _dbSet
+            .Where(p => p.IdEvento == idEvento
+                     && p.IdStatusConvite == (int)EnumStatusEnvioConvite.Confirmado)
+            .CountAsync();
     }
 
     public async Task<bool> ExistsAsync(int idEvento, int idUsuario, int idPerfil, int? ignoreId = null)

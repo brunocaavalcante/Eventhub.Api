@@ -32,7 +32,7 @@ public class ProgramacaoEventoMapping : IEntityTypeConfiguration<ProgramacaoEven
             .HasMaxLength(200);
 
         builder.Property(p => p.IdFoto)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(p => p.DataCadastro)
             .IsRequired();
@@ -49,6 +49,7 @@ public class ProgramacaoEventoMapping : IEntityTypeConfiguration<ProgramacaoEven
         builder.HasOne(p => p.Foto)
             .WithMany(f => f.Programacoes)
             .HasForeignKey(p => p.IdFoto)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.Responsaveis)

@@ -6,4 +6,6 @@ public interface INotificacaoRepository : IRepository<Notificacao>
 {
     Task<IEnumerable<Notificacao>> GetByUsuarioDestinoAsync(int idUsuario);
     Task<IEnumerable<Notificacao>> GetNaoLidasByUsuarioAsync(int idUsuario);
+    Task<Notificacao?> GetByIdWithIncludesAsync(int id);
+    Task MarcarTodasComoLidasAsync(int idUsuario);
 }

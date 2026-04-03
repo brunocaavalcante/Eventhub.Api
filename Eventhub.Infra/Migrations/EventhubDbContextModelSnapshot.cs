@@ -142,62 +142,6 @@ namespace Eventhub.Infra.Migrations
                     b.ToTable("ContribuicaoPresente", (string)null);
                 });
 
-            modelBuilder.Entity("Eventhub.Domain.Entities.Convite", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DataFim")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DataInicio")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("IdEvento")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdFoto")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Mensagem")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Nome2")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<int>("Opacity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TemaConvite")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdEvento")
-                        .IsUnique();
-
-                    b.HasIndex("IdFoto");
-
-                    b.ToTable("Convite", (string)null);
-                });
-
             modelBuilder.Entity("Eventhub.Domain.Entities.CurtidaFoto", b =>
                 {
                     b.Property<int>("Id")
@@ -267,50 +211,6 @@ namespace Eventhub.Infra.Migrations
                     b.ToTable("EnderecoEvento", (string)null);
                 });
 
-            modelBuilder.Entity("Eventhub.Domain.Entities.EnvioConvite", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataEnvio")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("IdConvite")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdEvento")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdParticipante")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdStatusEnvioConvite")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MensagemResposta")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
-
-                    b.Property<int>("QtdAcompanhantes")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdConvite");
-
-                    b.HasIndex("IdEvento");
-
-                    b.HasIndex("IdParticipante");
-
-                    b.HasIndex("IdStatusEnvioConvite");
-
-                    b.ToTable("EnvioConvite", (string)null);
-                });
-
             modelBuilder.Entity("Eventhub.Domain.Entities.Evento", b =>
                 {
                     b.Property<int>("Id")
@@ -353,6 +253,9 @@ namespace Eventhub.Infra.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
+
+                    b.Property<Guid>("TokenConvite")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
@@ -486,6 +389,9 @@ namespace Eventhub.Infra.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)");
 
+                    b.Property<bool>("ShowInMenu")
+                        .HasColumnType("tinyint(1)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Modulo", (string)null);
@@ -535,11 +441,9 @@ namespace Eventhub.Infra.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<int?>("NotificacaoTipoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Prioridade")
-                        .HasColumnType("int");
+                    b.Property<string>("Prioridade")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -559,42 +463,7 @@ namespace Eventhub.Infra.Migrations
 
                     b.HasIndex("IdUsuarioOrigem");
 
-                    b.HasIndex("NotificacaoTipoId");
-
                     b.ToTable("Notificacao", (string)null);
-                });
-
-            modelBuilder.Entity("Eventhub.Domain.Entities.NotificacaoTipo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<int?>("FotosId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IconePadrao")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("TextoPadrao")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FotosId");
-
-                    b.ToTable("NotificacaoTipo", (string)null);
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Participante", b =>
@@ -613,18 +482,39 @@ namespace Eventhub.Infra.Migrations
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("DataResposta")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int>("IdEvento")
                         .HasColumnType("int");
 
                     b.Property<int>("IdPerfil")
                         .HasColumnType("int");
 
+                    b.Property<int?>("IdStatusConvite")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
+
+                    b.Property<string>("MensagemOrganizador")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("MotivoRecusa")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("QtdAcompanhantes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdPerfil");
+
+                    b.HasIndex("IdStatusConvite");
 
                     b.HasIndex("IdUsuario");
 
@@ -632,6 +522,33 @@ namespace Eventhub.Infra.Migrations
                         .IsUnique();
 
                     b.ToTable("Participante", (string)null);
+                });
+
+            modelBuilder.Entity("Eventhub.Domain.Entities.ParticipantePermissao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Concedida")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("IdParticipante")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPermissao")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPermissao");
+
+                    b.HasIndex("IdParticipante", "IdPermissao")
+                        .IsUnique();
+
+                    b.ToTable("ParticipantePermissao", (string)null);
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Perfil", b =>
@@ -662,6 +579,38 @@ namespace Eventhub.Infra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Perfil", (string)null);
+                });
+
+            modelBuilder.Entity("Eventhub.Domain.Entities.PerfilEventoPermissao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Concedida")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("IdEvento")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPerfil")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPermissao")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEvento");
+
+                    b.HasIndex("IdPermissao");
+
+                    b.HasIndex("IdPerfil", "IdEvento", "IdPermissao")
+                        .IsUnique();
+
+                    b.ToTable("PerfilEventoPermissao", (string)null);
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.PerfilPermissao", b =>
@@ -843,7 +792,7 @@ namespace Eventhub.Infra.Migrations
                     b.Property<int>("IdEvento")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdFoto")
+                    b.Property<int?>("IdFoto")
                         .HasColumnType("int");
 
                     b.Property<int>("IdStatus")
@@ -1066,6 +1015,9 @@ namespace Eventhub.Infra.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("IdFoto");
 
                     b.ToTable("Usuario", (string)null);
@@ -1192,25 +1144,6 @@ namespace Eventhub.Infra.Migrations
                     b.Navigation("StatusContribuicao");
                 });
 
-            modelBuilder.Entity("Eventhub.Domain.Entities.Convite", b =>
-                {
-                    b.HasOne("Eventhub.Domain.Entities.Evento", "Evento")
-                        .WithOne("Convite")
-                        .HasForeignKey("Eventhub.Domain.Entities.Convite", "IdEvento")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Eventhub.Domain.Entities.Fotos", "Foto")
-                        .WithMany("Convites")
-                        .HasForeignKey("IdFoto")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Evento");
-
-                    b.Navigation("Foto");
-                });
-
             modelBuilder.Entity("Eventhub.Domain.Entities.CurtidaFoto", b =>
                 {
                     b.HasOne("Eventhub.Domain.Entities.Fotos", "Foto")
@@ -1228,40 +1161,6 @@ namespace Eventhub.Infra.Migrations
                     b.Navigation("Foto");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Eventhub.Domain.Entities.EnvioConvite", b =>
-                {
-                    b.HasOne("Eventhub.Domain.Entities.Convite", "Convite")
-                        .WithMany("EnviosConvite")
-                        .HasForeignKey("IdConvite")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Eventhub.Domain.Entities.Evento", "Evento")
-                        .WithMany("EnviosConvite")
-                        .HasForeignKey("IdEvento")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Eventhub.Domain.Entities.Participante", "Participante")
-                        .WithMany("EnviosConvite")
-                        .HasForeignKey("IdParticipante")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Eventhub.Domain.Entities.StatusEnvioConvite", "StatusEnvioConvite")
-                        .WithMany()
-                        .HasForeignKey("IdStatusEnvioConvite")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Convite");
-
-                    b.Navigation("Evento");
-
-                    b.Navigation("Participante");
-
-                    b.Navigation("StatusEnvioConvite");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Evento", b =>
@@ -1345,23 +1244,11 @@ namespace Eventhub.Infra.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Eventhub.Domain.Entities.NotificacaoTipo", null)
-                        .WithMany("Notificacoes")
-                        .HasForeignKey("NotificacaoTipoId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Evento");
 
                     b.Navigation("UsuarioDestino");
 
                     b.Navigation("UsuarioOrigem");
-                });
-
-            modelBuilder.Entity("Eventhub.Domain.Entities.NotificacaoTipo", b =>
-                {
-                    b.HasOne("Eventhub.Domain.Entities.Fotos", null)
-                        .WithMany("NotificacaoTipos")
-                        .HasForeignKey("FotosId");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Participante", b =>
@@ -1378,6 +1265,11 @@ namespace Eventhub.Infra.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Eventhub.Domain.Entities.StatusEnvioConvite", "StatusConvite")
+                        .WithMany()
+                        .HasForeignKey("IdStatusConvite")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Eventhub.Domain.Entities.Usuario", "Usuario")
                         .WithMany("Participantes")
                         .HasForeignKey("IdUsuario")
@@ -1388,7 +1280,55 @@ namespace Eventhub.Infra.Migrations
 
                     b.Navigation("Perfil");
 
+                    b.Navigation("StatusConvite");
+
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Eventhub.Domain.Entities.ParticipantePermissao", b =>
+                {
+                    b.HasOne("Eventhub.Domain.Entities.Participante", "Participante")
+                        .WithMany()
+                        .HasForeignKey("IdParticipante")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Eventhub.Domain.Entities.Permissao", "Permissao")
+                        .WithMany()
+                        .HasForeignKey("IdPermissao")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Participante");
+
+                    b.Navigation("Permissao");
+                });
+
+            modelBuilder.Entity("Eventhub.Domain.Entities.PerfilEventoPermissao", b =>
+                {
+                    b.HasOne("Eventhub.Domain.Entities.Evento", "Evento")
+                        .WithMany()
+                        .HasForeignKey("IdEvento")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Eventhub.Domain.Entities.Perfil", "Perfil")
+                        .WithMany()
+                        .HasForeignKey("IdPerfil")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Eventhub.Domain.Entities.Permissao", "Permissao")
+                        .WithMany()
+                        .HasForeignKey("IdPermissao")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Evento");
+
+                    b.Navigation("Perfil");
+
+                    b.Navigation("Permissao");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.PerfilPermissao", b =>
@@ -1470,8 +1410,7 @@ namespace Eventhub.Infra.Migrations
                     b.HasOne("Eventhub.Domain.Entities.Fotos", "Foto")
                         .WithMany("Programacoes")
                         .HasForeignKey("IdFoto")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Eventhub.Domain.Entities.StatusProgramacao", "Status")
                         .WithMany("Programacoes")
@@ -1572,11 +1511,6 @@ namespace Eventhub.Infra.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("Eventhub.Domain.Entities.Convite", b =>
-                {
-                    b.Navigation("EnviosConvite");
-                });
-
             modelBuilder.Entity("Eventhub.Domain.Entities.EnderecoEvento", b =>
                 {
                     b.Navigation("Eventos");
@@ -1584,11 +1518,6 @@ namespace Eventhub.Infra.Migrations
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Evento", b =>
                 {
-                    b.Navigation("Convite")
-                        .IsRequired();
-
-                    b.Navigation("EnviosConvite");
-
                     b.Navigation("Galerias");
 
                     b.Navigation("Notificacoes");
@@ -1610,13 +1539,9 @@ namespace Eventhub.Infra.Migrations
 
                     b.Navigation("Contribuicoes");
 
-                    b.Navigation("Convites");
-
                     b.Navigation("Curtidas");
 
                     b.Navigation("Galerias");
-
-                    b.Navigation("NotificacaoTipos");
 
                     b.Navigation("Programacoes");
 
@@ -1628,18 +1553,11 @@ namespace Eventhub.Infra.Migrations
                     b.Navigation("Permissoes");
                 });
 
-            modelBuilder.Entity("Eventhub.Domain.Entities.NotificacaoTipo", b =>
-                {
-                    b.Navigation("Notificacoes");
-                });
-
             modelBuilder.Entity("Eventhub.Domain.Entities.Participante", b =>
                 {
                     b.Navigation("Acompanhantes");
 
                     b.Navigation("Contribuicoes");
-
-                    b.Navigation("EnviosConvite");
                 });
 
             modelBuilder.Entity("Eventhub.Domain.Entities.Perfil", b =>

@@ -23,7 +23,8 @@ public class UpdateFotoDto
 {
     public int Id { get; set; }
     public string NomeArquivo { get; set; } = string.Empty;
-    public string Base64 { get; set; } = string.Empty;
+    public string? Base64 { get; set; }
+    public string? Url { get; set; }
     public string TipoImagem { get; set; } = string.Empty;
-     public string? TipoArquivo { get; set; }
+    public string? TipoArquivo { get; set; }
 }

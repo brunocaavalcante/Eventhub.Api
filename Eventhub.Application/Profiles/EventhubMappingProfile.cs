@@ -1,6 +1,7 @@
 using System.Linq;
 using AutoMapper;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.DTOs.Evento;
 using Eventhub.Domain.Entities;
 
 namespace Eventhub.Application.Profiles;
@@ -35,7 +36,9 @@ public class EventhubMappingProfile : Profile
             .ForMember(dest => dest.Usuario, opt => opt.MapFrom(src => src.Usuario))
             .ForMember(dest => dest.Perfil, opt => opt.MapFrom(src => src.Perfil))
             .ForMember(dest => dest.CadastroPendente, opt => opt.MapFrom(src => src.CadastroPendente))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Usuario.Status))
+            .ForMember(dest => dest.StatusConvite, opt => opt.MapFrom(src =>
+                src.StatusConvite != null ? src.StatusConvite.Descricao : null));
 
         CreateMap<Participante, ListarConvidadoDto>()
             .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Usuario != null ? src.Usuario.Nome : ""))
@@ -45,10 +48,9 @@ public class EventhubMappingProfile : Profile
                 src.Usuario != null && src.Usuario.Foto != null
                     ? src.Usuario.Foto.Url
                     : string.Empty))
-            .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.EnviosConvite
-                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.QtdAcompanhantes).FirstOrDefault()))
-            .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src => src.EnviosConvite
-                        .Where(ev => ev.IdEvento == src.IdEvento).Select(ev => ev.StatusEnvioConvite != null ? ev.StatusEnvioConvite.Descricao : null).FirstOrDefault() ?? "PendenteEnvio"));
+            .ForMember(dest => dest.QuandidadeAcompanhantes, opt => opt.MapFrom(src => src.QtdAcompanhantes))
+            .ForMember(dest => dest.StatusConfirmacao, opt => opt.MapFrom(src =>
+                src.StatusConvite != null ? src.StatusConvite.Descricao : "PendenteEnvio"));
 
         CreateMap<UploadFotoDto, Fotos>().ReverseMap();
         CreateMap<UpdateFotoDto, Fotos>().ReverseMap();
@@ -70,11 +72,11 @@ public class EventhubMappingProfile : Profile
         CreateMap<Evento, EventoDto>()
             .ForMember(dest => dest.IdTipoEvento, opt => opt.MapFrom(src => src.TipoEvento.Id))
             .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
+        
+        CreateMap<UpdateEventoDto, Evento>()
+            .ForMember(dest => dest.Endereco, opt => opt.MapFrom(src => src.Endereco));
 
         CreateMap<StatusEvento, StatusEventoDto>();
-
-        CreateMap<Convite, CreateConviteDto>().ReverseMap();
-        CreateMap<Convite, ConviteDto>();
 
         // Presente Mappings
         CreateMap<CreatePresenteDto, Presente>();
@@ -116,5 +118,25 @@ public class EventhubMappingProfile : Profile
         CreateMap<CreatePixEventoDto, PixEvento>();
         CreateMap<UpdatePixEventoDto, PixEvento>();
         CreateMap<PixEvento, PixEventoDto>();
+
+        // Notificacao Mappings
+        CreateMap<NotificacaoCreateDto, Notificacao>();
+        CreateMap<Notificacao, NotificacaoResponseDto>()
+            .ForMember(dest => dest.NomeUsuarioOrigem, opt => opt.MapFrom(src => src.UsuarioOrigem.Nome))
+            .ForMember(dest => dest.NomeUsuarioDestino, opt => opt.MapFrom(src => src.UsuarioDestino.Nome))
+            .ForMember(dest => dest.NomeEvento, opt => opt.MapFrom(src => src.Evento.Nome));
+
+        // ProgramacaoEvento Mappings
+        CreateMap<ProgramacaoEventoCreateDto, ProgramacaoEvento>()
+            .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
+        
+        CreateMap<ProgramacaoEventoUpdateDto, ProgramacaoEvento>()
+            .ForMember(dest => dest.IdEvento, opt => opt.Ignore())
+            .ForMember(dest => dest.IdFoto, opt => opt.Ignore())
+            .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
+        
+        CreateMap<ProgramacaoEvento, ProgramacaoEventoResponseDto>()
+            .ForMember(dest => dest.NomeEvento, opt => opt.MapFrom(src => src.Evento.Nome))
+            .ForMember(dest => dest.DescricaoStatus, opt => opt.MapFrom(src => src.Status.Descricao));
     }
 }

@@ -1,3 +1,5 @@
+using Eventhub.Domain.Enums;
+
 namespace Eventhub.Domain.Entities;
 
 public class Notificacao
@@ -11,8 +13,8 @@ public class Notificacao
     public string Descricao { get; set; } = string.Empty;
     public string LinkAcao { get; set; } = string.Empty;
     public string Icone { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public int Prioridade { get; set; }
+    public EnumNotificacaoStatus Status { get; set; }
+    public EnumNotificacaoPrioridade Prioridade { get; set; }
     public DateTime DataCadastro { get; set; }
     public DateTime DataEnvio { get; set; }
     public DateTime DataLeitura { get; set; }

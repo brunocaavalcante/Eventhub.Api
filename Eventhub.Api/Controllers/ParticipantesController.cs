@@ -1,7 +1,9 @@
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
+using Eventhub.Application.Helpers;
 using Eventhub.Application.Interfaces;
 using Eventhub.Domain.Enums;
+using Eventhub.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eventhub.Api.Controllers;
@@ -11,20 +13,32 @@ namespace Eventhub.Api.Controllers;
 public class ParticipantesController : BaseController
 {
     private readonly IParticipanteService _participanteService;
-    private readonly IEnvioConviteService _envioConviteService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IParticipantePermissaoService _participantePermissaoService;
+    private readonly IPermissaoEventoService _permissaoEventoService;
+    private readonly IParticipanteRepository _participanteRepository;
 
-    public ParticipantesController(IParticipanteService participanteService, IEnvioConviteService envioConviteService)
+    public ParticipantesController(
+        IParticipanteService participanteService, 
+        IUnitOfWork unitOfWork,
+        IParticipantePermissaoService participantePermissaoService,
+        IPermissaoEventoService permissaoEventoService,
+        IParticipanteRepository participanteRepository)
     {
         _participanteService = participanteService;
-        _envioConviteService = envioConviteService;
+        _unitOfWork = unitOfWork;
+        _participantePermissaoService = participantePermissaoService;
+        _permissaoEventoService = permissaoEventoService;
+        _participanteRepository = participanteRepository;
     }
+
     [HttpGet("evento/{idEvento}/confirmados")]
-    [ProducesResponseType(typeof(CustomResponse<IEnumerable<EnvioConviteDto>>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<ListarConvidadoDto>>), 200)]
     public async Task<IActionResult> ObterConfirmados(int idEvento)
     {
         try
         {
-            var confirmados = await _envioConviteService.GetConfirmadosByEventoAsync(idEvento);
+            var confirmados = await _participanteService.ObterConfirmadosAsync(idEvento);
             return CustomResponse(confirmados);
         }
         catch (Exception ex)
@@ -164,6 +178,133 @@ public class ParticipantesController : BaseController
         }
         catch (Exception ex)
         {
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("confirmar-presenca")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> ConfirmarPresenca([FromBody] ConfirmarPresencaDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.ConfirmarPresencaAsync(dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPost("recusar-convite")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> RecusarConvite([FromBody] RecusarConviteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.RecusarConviteAsync(dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    [HttpPatch("{idParticipante}/aprovar")]
+    [ProducesResponseType(typeof(CustomResponse<ParticipanteDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> AprovarPresenca(int idParticipante, [FromBody] AprovarPresencaDto dto)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var participante = await _participanteService.AprovarPresencaAsync(idParticipante, dto);
+            await _unitOfWork.CommitTransactionAsync();
+            return CustomResponse(participante);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Obtém as permissões efetivas (resolvidas) de um participante
+    /// </summary>
+    [HttpGet("{idParticipante}/permissoes-efetivas")]
+    [ProducesResponseType(typeof(CustomResponse<ConfiguracaoVisibilidadeDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPermissoesEfetivas(int idParticipante)
+    {
+        try
+        {
+            var participante = await _participanteRepository.GetByIdAsync(idParticipante);
+            if (participante == null)
+                return CustomResponse<object>(404, "Participante não encontrado.");
+
+            var permissoes = await _permissaoEventoService.ListarPermissoesEventoAsync(participante.IdUsuario, participante.IdEvento);
+            var configuracao = PermissaoMapper.PermissoesToDto(permissoes);
+            return CustomResponse(configuracao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Obtém apenas os overrides de permissões do participante
+    /// </summary>
+    [HttpGet("{idParticipante}/permissoes-overrides")]
+    [ProducesResponseType(typeof(CustomResponse<ConfiguracaoVisibilidadeDto>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 404)]
+    public async Task<IActionResult> ObterPermissoesOverrides(int idParticipante)
+    {
+        try
+        {
+            var permissoes = await _participantePermissaoService.ObterPermissoesParticipanteAsync(idParticipante);
+            var configuracao = permissoes.Any() 
+                ? PermissaoMapper.PermissoesToDto(permissoes)
+                : new ConfiguracaoVisibilidadeDto();
+            return CustomResponse(configuracao);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
+
+    /// <summary>
+    /// Atualiza os overrides de permissões do participante
+    /// </summary>
+    [HttpPut("{idParticipante}/permissoes")]
+    [ProducesResponseType(typeof(CustomResponse<object>), 200)]
+    [ProducesResponseType(typeof(CustomResponse<object>), 400)]
+    public async Task<IActionResult> AtualizarPermissoes(int idParticipante, [FromBody] ConfiguracaoVisibilidadeDto configuracao)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var permissoes = PermissaoMapper.DtoToPermissoes(configuracao);
+            await _participantePermissaoService.ConfigurarPermissoesParticipanteAsync(idParticipante, permissoes);
+            await _unitOfWork.CommitTransactionAsync();
+            
+            return CustomResponse(new { Mensagem = "Permissões atualizadas com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
             return TratarErros(ex);
         }
     }

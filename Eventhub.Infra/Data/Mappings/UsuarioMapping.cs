@@ -24,6 +24,9 @@ public class UsuarioMapping : IEntityTypeConfiguration<Usuario>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.HasIndex(u => u.Email)
+            .IsUnique();
+
         builder.Property(u => u.IdFoto)
             .IsRequired(false);
 

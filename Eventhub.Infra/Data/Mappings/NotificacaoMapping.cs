@@ -1,4 +1,5 @@
 using Eventhub.Domain.Entities;
+using Eventhub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -39,10 +40,12 @@ public class NotificacaoMapping : IEntityTypeConfiguration<Notificacao>
 
         builder.Property(n => n.Status)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .HasConversion<string>();
 
         builder.Property(n => n.Prioridade)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion<string>();
 
         builder.Property(n => n.DataCadastro)
             .IsRequired();

@@ -20,9 +20,9 @@ public abstract class BaseController : ControllerBase
         return StatusCode(statusCode, response);
     }
 
-    protected IActionResult CustomResponse<T>(int statusCode, List<string> erros)
+    protected IActionResult CustomResponse<T>(int statusCode, ExceptionValidation ex)
     {
-        var response = new CustomResponse<T>(statusCode, erros);
+        var response = new CustomResponse<T>(statusCode, ex);
         return StatusCode(statusCode, response);
     }
 
@@ -30,7 +30,7 @@ public abstract class BaseController : ControllerBase
     {
         if (ex is ExceptionValidation validationEx)
         {
-            return CustomResponse<object>(400, validationEx.Message);
+            return CustomResponse<object>(400, validationEx);
         }
 
         return CustomResponse<object>(500, ex.Message);

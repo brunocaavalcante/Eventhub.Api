@@ -62,28 +62,37 @@ public class FotosService : BaseService, IFotosService
         if (foto == null)
             throw new ExceptionValidation("Foto não encontrada.");
 
-        var uploadResult = await _imageStorageService.UploadAsync(new ImageStorageUploadRequest
-        {
-            FileName = dto.NomeArquivo,
-            Content = DecodeBase64(dto.Base64),
-            ContentType = dto.TipoArquivo
-        });
-
-        var previousPublicId = foto.PublicId;
-
         foto.NomeArquivo = dto.NomeArquivo;
-        foto.Url = uploadResult.Url;
-        foto.PublicId = uploadResult.PublicId;
-        foto.ContentType = uploadResult.ContentType;
-        foto.TamanhoKB = CalculateKb(uploadResult.Bytes);
-        foto.DataUpload = DateTime.UtcNow;
 
-        _fotosRepository.Update(foto);
-        await _unitOfWork.SaveChangesAsync();
-
-        if (!string.IsNullOrWhiteSpace(previousPublicId) && !string.Equals(previousPublicId, uploadResult.PublicId, StringComparison.Ordinal))
+        if (!string.IsNullOrWhiteSpace(dto.Base64))
         {
-            await _imageStorageService.DeleteAsync(previousPublicId!);
+            var uploadResult = await _imageStorageService.UploadAsync(new ImageStorageUploadRequest
+            {
+                FileName = dto.NomeArquivo,
+                Content = DecodeBase64(dto.Base64),
+                ContentType = dto.TipoArquivo
+            });
+
+            var previousPublicId = foto.PublicId;
+
+            foto.Url = uploadResult.Url;
+            foto.PublicId = uploadResult.PublicId;
+            foto.ContentType = uploadResult.ContentType;
+            foto.TamanhoKB = CalculateKb(uploadResult.Bytes);
+            foto.DataUpload = DateTime.UtcNow;
+
+            _fotosRepository.Update(foto);
+            await _unitOfWork.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(previousPublicId) && !string.Equals(previousPublicId, uploadResult.PublicId, StringComparison.Ordinal))
+            {
+                await _imageStorageService.DeleteAsync(previousPublicId!);
+            }
+        }
+        else
+        {
+            _fotosRepository.Update(foto);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         return _mapper.Map<FotoDto>(foto);

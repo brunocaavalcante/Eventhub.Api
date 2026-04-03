@@ -109,6 +109,12 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         _dbSet.Update(entity);
     }
 
+    public virtual async Task UpdateAsync(TEntity entity)
+    {
+        _dbSet.Update(entity);
+        await Task.CompletedTask;
+    }
+
     public virtual void UpdateRange(IEnumerable<TEntity> entities)
     {
         _dbSet.UpdateRange(entities);
@@ -117,6 +123,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     public virtual void Remove(TEntity entity)
     {
         _dbSet.Remove(entity);
+    }
+    public virtual async Task RemoveAsync(TEntity entity)
+    {
+        _dbSet.Remove(entity);
+        await Task.CompletedTask;
     }
 
     public virtual void RemoveRange(IEnumerable<TEntity> entities)

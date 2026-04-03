@@ -16,6 +16,10 @@ public class ContribuicaoPresenteServiceTests
     private readonly Mock<IContribuicaoPresenteRepository> _contribuicaoRepoMock;
     private readonly Mock<IPresenteRepository> _presenteRepoMock;
     private readonly Mock<IFotosService> _fotosServiceMock;
+    private readonly Mock<IParticipanteRepository> _participanteRepositoryMock;
+    private readonly Mock<IUsuarioRepository> _usuarioRepositoryMock;
+    private readonly Mock<IEventoRepository> _eventoRepositoryMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly ContribuicaoPresenteService _service;
@@ -25,12 +29,20 @@ public class ContribuicaoPresenteServiceTests
         _contribuicaoRepoMock = new Mock<IContribuicaoPresenteRepository>();
         _presenteRepoMock = new Mock<IPresenteRepository>();
         _fotosServiceMock = new Mock<IFotosService>();
+        _participanteRepositoryMock = new Mock<IParticipanteRepository>();
+        _usuarioRepositoryMock = new Mock<IUsuarioRepository>();
+        _eventoRepositoryMock = new Mock<IEventoRepository>();
+        _emailServiceMock = new Mock<IEmailService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
         _service = new ContribuicaoPresenteService(
             _contribuicaoRepoMock.Object,
             _presenteRepoMock.Object,
             _fotosServiceMock.Object,
+            _participanteRepositoryMock.Object,
+            _usuarioRepositoryMock.Object,
+            _eventoRepositoryMock.Object,
+            _emailServiceMock.Object,
             _unitOfWorkMock.Object,
             _mapperMock.Object);
     }
@@ -98,19 +110,31 @@ public class ContribuicaoPresenteServiceTests
         { 
             Id = 1, 
             IdPresente = 10,
+            IdParticipante = 100,
             IdStatusContribuicao = (int)StatusContribuicaoEnum.Confirmado,
             Valor = 300m
         };
         var presente = new Presente 
         { 
             Id = 10, 
+            IdEvento = 50,
             Valor = 1000m, 
             IdStatus = (int)StatusPresenteEnum.EmArrecadacao 
         };
+        var participante = new Participante { Id = 100, IdUsuario = 200 };
+        var usuario = new Usuario { Id = 200, Nome = "João Silva", Email = "joao@test.com" };
+        var evento = new Evento { Id = 50, Nome = "Casamento João e Maria" };
 
         _contribuicaoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(contribuicao);
         _presenteRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(presente);
         _contribuicaoRepoMock.Setup(r => r.GetTotalContribuidoAsync(10)).ReturnsAsync(500m); // Ainda tem contribuições
+        _participanteRepositoryMock.Setup(r => r.GetByIdAsync(100)).ReturnsAsync(participante);
+        _usuarioRepositoryMock.Setup(r => r.GetByIdAsync(200)).ReturnsAsync(usuario);
+        _eventoRepositoryMock.Setup(r => r.GetByIdAsync(50)).ReturnsAsync(evento);
+        _emailServiceMock.Setup(e => e.EnviarEmailContribuicaoCanceladaAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
+            It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
         _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -120,6 +144,9 @@ public class ContribuicaoPresenteServiceTests
         contribuicao.IdStatusContribuicao.Should().Be((int)StatusContribuicaoEnum.Cancelado);
         contribuicao.Justificativa.Should().Be("Duplicidade");
         _contribuicaoRepoMock.Verify(r => r.Update(contribuicao), Times.Once);
+        _emailServiceMock.Verify(e => e.EnviarEmailContribuicaoCanceladaAsync(
+            "joao@test.com", "João Silva", It.IsAny<string>(), 
+            "Casamento João e Maria", 300m, "Duplicidade"), Times.Once);
         presente.IdStatus.Should().Be((int)StatusPresenteEnum.EmArrecadacao); // Status continua
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once); // Apenas uma vez (sem mudança no presente)
     }

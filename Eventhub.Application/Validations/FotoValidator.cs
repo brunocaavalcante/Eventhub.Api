@@ -38,7 +38,8 @@ public class UpdateFotoValidator : AbstractValidator<UpdateFotoDto>
 
         RuleFor(f => f.Base64)
             .NotEmpty().WithMessage("Arquivo é obrigatório.")
-            .Must(FotoBase64Helper.IsBase64String).WithMessage("Arquivo não está em Base64 válido.");
+            .Must(b => FotoBase64Helper.IsBase64String(b)).WithMessage("Arquivo não está em Base64 válido.")
+            .When(f => string.IsNullOrWhiteSpace(f.Url));
 
         RuleFor(f => f.TipoArquivo)
             .Must(t => string.IsNullOrWhiteSpace(t) || t.StartsWith("image/"))

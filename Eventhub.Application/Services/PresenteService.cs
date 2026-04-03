@@ -12,17 +12,20 @@ namespace Eventhub.Application.Services;
 public class PresenteService : BaseService, IPresenteService
 {
     private readonly IPresenteRepository _presenteRepository;
+    private readonly IStatusPresenteRepository _statusPresenteRepository;
     private readonly IFotosService _fotosService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public PresenteService(
         IPresenteRepository presenteRepository,
+        IStatusPresenteRepository statusPresenteRepository,
         IFotosService fotosService,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _presenteRepository = presenteRepository;
+        _statusPresenteRepository = statusPresenteRepository;
         _fotosService = fotosService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -113,7 +116,7 @@ public class PresenteService : BaseService, IPresenteService
                     var uploadFotoDto = new UploadFotoDto
                     {
                         NomeArquivo = imageDto.NomeArquivo,
-                        Base64 = imageDto.Base64,
+                        Base64 = imageDto.Base64 ?? string.Empty,
                         TipoImagem = imageDto.TipoImagem
                     };
 
@@ -180,6 +183,12 @@ public class PresenteService : BaseService, IPresenteService
     {
         var categorias = await _presenteRepository.GetByCategoryAsync();
         return _mapper.Map<IEnumerable<CategoriaPresenteDto>>(categorias);
+    }
+
+    public async Task<IEnumerable<StatusPresenteDto>> ObterStatusPresentesAsync()
+    {
+        var statusPresentes = await _statusPresenteRepository.GetAllAsync();
+        return _mapper.Map<IEnumerable<StatusPresenteDto>>(statusPresentes);
     }
 
     public async Task ReservarPresenteAsync(int idPresente, ReservarPresenteDto dto)

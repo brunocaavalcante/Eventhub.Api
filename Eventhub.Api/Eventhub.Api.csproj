@@ -14,4 +14,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Eventhub.IoC\Eventhub.IoC.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Templates\Email\*.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

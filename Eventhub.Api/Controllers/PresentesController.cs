@@ -35,6 +35,21 @@ public class PresentesController : BaseController
             return TratarErros(ex);
         }
     }
+    
+    [HttpGet("status")]
+    [ProducesResponseType(typeof(CustomResponse<IEnumerable<StatusPresenteDto>>), 200)]
+    public async Task<IActionResult> ObterStatusPresentes()
+    {
+        try
+        {
+            var statusPresentes = await _presenteService.ObterStatusPresentesAsync();
+            return CustomResponse(statusPresentes);
+        }
+        catch (Exception ex)
+        {
+            return TratarErros(ex);
+        }
+    }
 
     [HttpGet("categorias")]
     [ProducesResponseType(typeof(CustomResponse<IEnumerable<CategoriaPresenteDto>>), 200)]

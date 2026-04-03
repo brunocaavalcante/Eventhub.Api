@@ -11,10 +11,23 @@ public class ProgramacaoEventoRepository : Repository<ProgramacaoEvento>, IProgr
     {
     }
 
+    public async Task<ProgramacaoEvento?> GetByIdWithIncludesAsync(int id)
+    {
+        return await _dbSet
+            .Include(p => p.Evento)
+            .Include(p => p.Status)
+            .Include(p => p.Foto)
+            .Include(p => p.Responsaveis)
+                .ThenInclude(r => r.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<IEnumerable<ProgramacaoEvento>> GetByEventoAsync(int idEvento)
     {
         return await _dbSet
             .Where(p => p.IdEvento == idEvento)
+            .Include(p => p.Evento)
+            .Include(p => p.Status)
             .Include(p => p.Foto)
             .Include(p => p.Responsaveis)
                 .ThenInclude(r => r.Usuario)

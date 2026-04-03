@@ -13,7 +13,9 @@ namespace Eventhub.Tests.Services;
 public class PresenteServiceTests
 {
     private readonly Mock<IPresenteRepository> _repoMock;
+    private readonly Mock<IStatusPresenteRepository> _statusPresenteRepoMock;
     private readonly Mock<IFotosService> _fotosServiceMock;
+
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly PresenteService _service;
@@ -21,10 +23,11 @@ public class PresenteServiceTests
     public PresenteServiceTests()
     {
         _repoMock = new Mock<IPresenteRepository>();
+        _statusPresenteRepoMock = new Mock<IStatusPresenteRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _fotosServiceMock = new Mock<IFotosService>();
         _mapperMock = new Mock<IMapper>();
-        _service = new PresenteService(_repoMock.Object, _fotosServiceMock.Object, _unitOfWorkMock.Object, _mapperMock.Object);
+        _service = new PresenteService(_repoMock.Object, _statusPresenteRepoMock.Object, _fotosServiceMock.Object, _unitOfWorkMock.Object, _mapperMock.Object);
     }
 
     [Fact]
@@ -800,6 +803,56 @@ public class PresenteServiceTests
         // Assert
         await act.Should().ThrowAsync<ExceptionValidation>()
             .WithMessage("*não tem permissão*");
+    }
+
+    #endregion
+
+    #region ObterStatusPresentesAsync
+
+    [Fact]
+    public async Task ObterStatusPresentesAsync_DeveRetornarListaDeStatusPresente_ComSucesso()
+    {
+        // Arrange
+        var statusPresentes = new List<StatusPresente>
+        {
+            new StatusPresente { Id = 1, Descricao = "Disponível" },
+            new StatusPresente { Id = 2, Descricao = "Reservado" },
+            new StatusPresente { Id = 3, Descricao = "Em Arrecadação" }
+        };
+        var statusPresenteDtos = new List<StatusPresenteDto>
+        {
+            new StatusPresenteDto { Id = 1, Descricao = "Disponível" },
+            new StatusPresenteDto { Id = 2, Descricao = "Reservado" },
+            new StatusPresenteDto { Id = 3, Descricao = "Em Arrecadação" }
+        };
+
+        _statusPresenteRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(statusPresentes);
+        _mapperMock.Setup(m => m.Map<IEnumerable<StatusPresenteDto>>(statusPresentes)).Returns(statusPresenteDtos);
+
+        // Act
+        var result = (await _service.ObterStatusPresentesAsync()).ToList();
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().Contain(s => s.Descricao == "Disponível");
+        result.Should().Contain(s => s.Descricao == "Reservado");
+        _statusPresenteRepoMock.Verify(r => r.GetAllAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterStatusPresentesAsync_DeveRetornarListaVazia_QuandoNaoHouverRegistros()
+    {
+        // Arrange
+        _statusPresenteRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<StatusPresente>());
+        _mapperMock.Setup(m => m.Map<IEnumerable<StatusPresenteDto>>(It.IsAny<IEnumerable<StatusPresente>>()))
+            .Returns(new List<StatusPresenteDto>());
+
+        // Act
+        var result = await _service.ObterStatusPresentesAsync();
+
+        // Assert
+        result.Should().BeEmpty();
+        _statusPresenteRepoMock.Verify(r => r.GetAllAsync(), Times.Once);
     }
 
     #endregion

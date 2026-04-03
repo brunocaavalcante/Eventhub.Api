@@ -2,6 +2,7 @@ using Eventhub.Api.Controllers;
 using Eventhub.Api.Models;
 using Eventhub.Application.DTOs;
 using Eventhub.Application.Interfaces;
+using Eventhub.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -10,12 +11,20 @@ namespace Eventhub.Tests.Controllers
     public class ParticipantesControllerTests
     {
         private readonly Mock<IParticipanteService> _serviceMock = new();
-        private readonly Mock<IEnvioConviteService> _envioConviteServiceMock = new();
+        private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
+        private readonly Mock<IParticipantePermissaoService> _participantePermissaoServiceMock = new();
+        private readonly Mock<IPermissaoEventoService> _permissaoEventoServiceMock = new();
+        private readonly Mock<IParticipanteRepository> _participanteRepositoryMock = new();
         private readonly ParticipantesController _controller;
 
         public ParticipantesControllerTests()
         {
-            _controller = new ParticipantesController(_serviceMock.Object, _envioConviteServiceMock.Object);
+            _controller = new ParticipantesController(
+                _serviceMock.Object, 
+                _unitOfWorkMock.Object, 
+                _participantePermissaoServiceMock.Object, 
+                _permissaoEventoServiceMock.Object, 
+                _participanteRepositoryMock.Object);
         }
 
         [Fact]

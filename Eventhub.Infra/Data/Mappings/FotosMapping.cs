@@ -46,11 +46,6 @@ public class FotosMapping : IEntityTypeConfiguration<Fotos>
             .HasForeignKey(p => p.IdFoto)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(f => f.Convites)
-            .WithOne(c => c.Foto)
-            .HasForeignKey(c => c.IdFoto)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasMany(f => f.Comentarios)
             .WithOne(c => c.Foto)
             .HasForeignKey(c => c.IdFoto)

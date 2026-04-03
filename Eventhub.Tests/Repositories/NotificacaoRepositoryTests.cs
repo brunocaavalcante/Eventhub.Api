@@ -3,6 +3,7 @@ using Eventhub.Infra.Data;
 using Eventhub.Infra.Repositories;
 using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
+using Eventhub.Domain.Enums;
 
 namespace Eventhub.Tests.Repositories;
 
@@ -38,9 +39,9 @@ public class NotificacaoRepositoryTests
 
         var hoje = DateTime.Now;
         context.Notificacoes.AddRange(
-            new Notificacao { Id = 1, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Notificação 1", Descricao = "Descrição 1", LinkAcao = "", Icone = "icon1", Status = "Enviada", Prioridade = 1, Data = hoje.AddDays(-2), DataCadastro = hoje.AddDays(-2), DataEnvio = hoje.AddDays(-2), DataLeitura = DateTime.MinValue },
-            new Notificacao { Id = 2, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Notificação 2", Descricao = "Descrição 2", LinkAcao = "", Icone = "icon2", Status = "Enviada", Prioridade = 2, Data = hoje.AddDays(-1), DataCadastro = hoje.AddDays(-1), DataEnvio = hoje.AddDays(-1), DataLeitura = DateTime.MinValue },
-            new Notificacao { Id = 3, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = 2, Titulo = "Notificação 3", Descricao = "Descrição 3", LinkAcao = "", Icone = "icon3", Status = "Enviada", Prioridade = 1, Data = hoje, DataCadastro = hoje, DataEnvio = hoje, DataLeitura = DateTime.MinValue }
+            new Notificacao { Id = 1, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Notificação 1", Descricao = "Descrição 1", LinkAcao = "", Icone = "icon1", Status = EnumNotificacaoStatus.Enviada, Prioridade = EnumNotificacaoPrioridade.Alta, Data = hoje.AddDays(-2), DataCadastro = hoje.AddDays(-2), DataEnvio = hoje.AddDays(-2), DataLeitura = DateTime.MinValue },
+            new Notificacao { Id = 2, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Notificação 2", Descricao = "Descrição 2", LinkAcao = "", Icone = "icon2", Status = EnumNotificacaoStatus.Enviada, Prioridade = EnumNotificacaoPrioridade.Media, Data = hoje.AddDays(-1), DataCadastro = hoje.AddDays(-1), DataEnvio = hoje.AddDays(-1), DataLeitura = DateTime.MinValue },
+            new Notificacao { Id = 3, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = 2, Titulo = "Notificação 3", Descricao = "Descrição 3", LinkAcao = "", Icone = "icon3", Status = EnumNotificacaoStatus.Enviada, Prioridade = EnumNotificacaoPrioridade.Baixa, Data = hoje, DataCadastro = hoje, DataEnvio = hoje, DataLeitura = DateTime.MinValue }
         );
         await context.SaveChangesAsync();
         var repo = new NotificacaoRepository(context);
@@ -80,9 +81,9 @@ public class NotificacaoRepositoryTests
 
         var hoje = DateTime.Now;
         context.Notificacoes.AddRange(
-            new Notificacao { Id = 1, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Não Lida 1", Descricao = "Descrição 1", LinkAcao = "", Icone = "icon1", Status = "Enviada", Prioridade = 1, Data = hoje.AddDays(-2), DataCadastro = hoje.AddDays(-2), DataEnvio = hoje.AddDays(-2), DataLeitura = DateTime.MinValue },
-            new Notificacao { Id = 2, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Lida", Descricao = "Descrição 2", LinkAcao = "", Icone = "icon2", Status = "Lida", Prioridade = 2, Data = hoje.AddDays(-1), DataCadastro = hoje.AddDays(-1), DataEnvio = hoje.AddDays(-1), DataLeitura = hoje },
-            new Notificacao { Id = 3, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Não Lida 2", Descricao = "Descrição 3", LinkAcao = "", Icone = "icon3", Status = "Enviada", Prioridade = 1, Data = hoje, DataCadastro = hoje, DataEnvio = hoje, DataLeitura = DateTime.MinValue }
+            new Notificacao { Id = 1, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Não Lida 1", Descricao = "Descrição 1", LinkAcao = "", Icone = "icon1", Status = EnumNotificacaoStatus.Enviada, Prioridade = EnumNotificacaoPrioridade.Alta, Data = hoje.AddDays(-2), DataCadastro = hoje.AddDays(-2), DataEnvio = hoje.AddDays(-2), DataLeitura = DateTime.MinValue },
+            new Notificacao { Id = 2, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Lida", Descricao = "Descrição 2", LinkAcao = "", Icone = "icon2", Status = EnumNotificacaoStatus.Lida, Prioridade = EnumNotificacaoPrioridade.Media, Data = hoje.AddDays(-1), DataCadastro = hoje.AddDays(-1), DataEnvio = hoje.AddDays(-1), DataLeitura = hoje },
+            new Notificacao { Id = 3, IdEvento = 1, IdUsuarioOrigem = 2, IdUsuarioDestino = idUsuarioDestino, Titulo = "Não Lida 2", Descricao = "Descrição 3", LinkAcao = "", Icone = "icon3", Status = EnumNotificacaoStatus.Enviada, Prioridade = EnumNotificacaoPrioridade.Baixa, Data = hoje, DataCadastro = hoje, DataEnvio = hoje, DataLeitura = DateTime.MinValue }
         );
         await context.SaveChangesAsync();
         var repo = new NotificacaoRepository(context);

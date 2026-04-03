@@ -16,6 +16,12 @@ public class UsuarioRepository : Repository<Usuario>, IUsuarioRepository
         return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+
+    public async Task<Usuario?> GetByEmailTelefoneAsync(string email, string telefone)
+    {
+        return await _dbSet.FirstOrDefaultAsync(u => u.Email == email || u.Telefone == telefone);
+    }
+
     public async Task<bool> EmailExistsAsync(string email)
     {
         return await _dbSet.AnyAsync(u => u.Email == email);
